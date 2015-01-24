@@ -1,0 +1,132 @@
+record(longin, "$(DEV):TSS_EVENTCODE")
+{
+    field(DESC, "Event Code for port $(PORT)")
+    field(DTYP, "TimeStampSource")
+    field(INP,  "@$(PORT) EventCode")
+    field(SCAN, "I/O Intr")
+    field(PRIO, "LOW")
+    field(TSE, "-2")
+    field(MDEL, "-1")
+    field(FLNK, "$(DEV):TSS_EVENTCODE_HST")
+}
+
+record(longin, "$(DEV):TSS_APULSEID")
+{
+    field(DESC, "Pulse ID for Active Timeslot")
+    field(DTYP, "TimeStampSource")
+    field(INP,  "@$(PORT) ActivePulseID")
+    field(SCAN, "I/O Intr")
+    field(PRIO, "LOW")
+    field(TSE, "-2")
+    field(MDEL, "-1")
+    field(FLNK, "$(DEV):TSS_APULSEID_HST")
+}
+
+record(longin, "$(DEV):TSS_CPULSEID")
+{
+    field(DESC, "Pulse ID for Current Timeslot")
+    field(DTYP, "TimeStampSource")
+    field(INP,  "@$(PORT) CurrentPulseID")
+    field(SCAN, "I/O Intr")
+    field(PRIO, "LOW")
+    field(TSE, "-2")
+    field(MDEL, "-1")
+    field(FLNK, "$(DEV):TSS_CPULSEID_HST")
+}
+
+record(longin, "$(DEV):TSS_DPULSEID")
+{
+    field(DESC, "Pulse ID difference")
+    field(DTYP, "TimeStampSource")
+    field(INP, "@$(PORT) DiffPulseID")
+    field(SCAN, "I/O Intr")
+    field(PRIO, "LOW")
+    field(TSE, "-2")
+    field(MDEL, "-1")
+    field(FLNK, "$(DEV):TSS_DPULSEID_HST")
+}
+
+record(longin, "$(DEV):TSS_CTIMESLOT")
+{
+    field(DESC, "Current timeslot")
+    field(DTYP, "TimeStampSource")
+    field(INP,  "@$(PORT) CurrentTimeSlot")
+    field(SCAN, "I/O Intr")
+    field(PRIO, "LOW")
+    field(TSE, "-2")
+    field(MDEL, "-1")
+    field(FLNK, "$(DEV):TSS_CTIMESLOT_HST")
+}
+
+record(longin, "$(DEV):TSS_ERTICKS")
+{
+    field(DESC, "EVR Clock Tick counter at callback time")
+    field(DTYP, "TimeStampSource")
+    field(INP,  "@$(PORT) ErTicks")
+    field(SCAN, "I/O Intr")
+    field(PRIO, "LOW")
+    field(TSE, "-2")
+    field(MDEL, "-1")
+    field(FLNK, "$(DEV):TSS_ERTICKS_HST")
+}
+
+record(longout, "$(DEV):TSS_SETEC")
+{
+    field(DESC, "Set Event Code for port $(PORT)")
+    field(DTYP, "TimeStampSource")
+    field(OUT,  "@$(PORT) EventCode")
+    field(VAL,  "$(EVNTC=0)")
+}
+
+record(compress, "$(DEV):TSS_EVENTCODE_HST")
+{
+    field(DESC, "History buffer for event code")
+    field(INP,  "$(DEV):TSS_EVENTCODE")
+    field(ALG,  "Circular Buffer")
+    field(NSAM, "$(NSAM=256)")
+    field(TSEL, "$(DEV):TSS_EVENTCODE.TIME")
+}
+
+record(compress, "$(DEV):TSS_APULSEID_HST")
+{
+    field(DESC, "History buffer for active pulse ID")
+    field(INP,  "$(DEV):TSS_APULSEID")
+    field(ALG,  "Circular Buffer")
+    field(NSAM, "$(NSAM=256)")
+    field(TSEL, "$(DEV):TSS_APULSEID.TIME")
+}
+
+record(compress, "$(DEV):TSS_CPULSEID_HST")
+{
+    field(DESC, "History buffer for current pulse ID")
+    field(INP,  "$(DEV):TSS_CPULSEID")
+    field(ALG,  "Circular Buffer")
+    field(NSAM, "$(NSAM=256)")
+    field(TSEL, "$(DEV):TSS_CPULSEID.TIME")
+}
+
+record(compress, "$(DEV):TSS_DPULSEID_HST")
+{
+    field(DESC, "History buffer for pulse ID difference")
+    field(INP,  "$(DEV):TSS_DPULSEID")
+    field(ALG,  "Circular Buffer")
+    field(NSAM, "$(NSAM=256)")
+    field(TSEL, "$(DEV):TSS_DPULSEID.TIME")
+}
+ 
+record(compress, "$(DEV):TSS_CTIMESLOT_HST")
+{
+    field(DESC, "History buffer for current timeslot")
+    field(INP,  "$(DEV):TSS_CTIMESLOT")
+    field(ALG,  "Circular Buffer")
+    field(NSAM, "$(NSAM=256)")
+    field(TSEL, "$(DEV):TSS_CTIMESLOT.TIME")
+}
+record(compress, "$(DEV):TSS_ERTICKS_HST")
+{
+    field(DESC, "History buffer for evr tick counter")
+    field(INP,  "$(DEV):TSS_ERTICKS")
+    field(ALG,  "Circular Buffer")
+    field(NSAM, "$(NSAM=256)")
+    field(TSEL, "$(DEV):TSS_ERTICKS.TIME")
+}

@@ -1,0 +1,94 @@
+--------------------------------------------------
+TIMESTAMPSOURCE LIBRARY FOR EPICS AREA DETECTOR
+--------------------------------------------------
+
+How to use the user-defined timestamp source for the camera driver
+
+This module provides a library for the user-defined timestamp 
+source which is named "timeStampSource."
+
+The library provides:
+1. Registration the user callback, 
+2. Default callback function, 
+3. Database template for the default callback function.
+
+Purpose for the timeStampSource library
+
+- Provide callback function for the areaDetector
+- The callback provides PulseID embedded timestamp for the driver, asyn device and file plug-in(s)
+- the callback also provides diagnostic features
+- run-time configurable event code
+- EPICS PVs for the event code configuration and diagnostics
+
+
+Instructions to use the library
+
+- Please, put the followings lines into "RELEASE/configure" file
+
+ADSUPPORT_MODULE_VERSION=<version>
+ADSUPPORT=$(EPICS_MODULES)/ADSupport/$(ADSUPPORT_MODULE_VERSION)
+
+- Please, add the followings lines into "<application>/src/Makefile"
+
+<application>_DBD += timeStampSource.dbd
+<application>_LIBS += timeStampSource
+
+- Please, add the following into "<application>/Db/Makefile"
+
+DB_INSTALLS += $(ADSUPPORT)/db/timeStampSource.db
+
+- Please, load up the database templeate
+
+dbLoadRecord("db/timeStampSource.db", "DEV=<DEV_MACRO>,PORT=<PORT_NAME>,SNAM=<BUFF_SIZE>")
+
+DEV: Please, follow the PV Name  Convention
+PORT: port name for camera
+SNAM: size of history buffer for the diagnostic history. The default 256 will be applied, if it is not described in the command.
+
+- Please, register the user-defined timestamp callback with the following
+
+registerUserTimeStampSource("<PORT_NAME>", "TimeStampSource")
+
+"<PORT_NAME>": port name for the camera
+"TimeStampSource": the callback function name. If IOC engineer wants to replace it with own function, Please, replace the string with the own function name.
+
+The command should be for each camera port. If there are multiple camera  and camera ports, Please, repeat the command with correct port name.
+
+
+- Verify 
+
+If the registration and database loading are completed successfully, we can verify it with the following command.
+
+listUserTimeStampSource [PORT_NAME]
+
+Here is an example.
+
+epics> listUserTimeStampSource
+listUserTimeStampSource, found 1 registration(s)
+ port name:            PS695     function name:  TimeStampSource, (0x9e1f50)
+ time-stamp source has 7 PV(s)
+    IOC:DMP1:PS695:TSS_APULSEID
+    IOC:DMP1:PS695:TSS_CPULSEID
+    IOC:DMP1:PS695:TSS_CTIMESLOT
+    IOC:DMP1:PS695:TSS_DPULSEID
+    IOC:DMP1:PS695:TSS_ERTICKS
+    IOC:DMP1:PS695:TSS_EVENTCODE
+    IOC:DMP1:PS695:TSS_SETEC
+epics>
+
+
+- Supporting PVs and Purpose
+
+--------------------	------------------------	---------------------------------------------------------------------------------------------------
+PV			History Buffer PV		Purpose/Description
+--------------------	------------------------	---------------------------------------------------------------------------------------------------
+$(DEV):TSS_SETEC	N/A				Set Event Code for the timestamp
+$(DEV):TSS_EVENTCODE	$(DEV):TSS_EVENTCODE_HST	Readout event code which has been configured by $(DEV):TSS_SETEC
+$(DEV):TSS_APULSEID	$(DEV):TSS_APLUSEID_HST		PulseID for the active timeslot (or for the event code)
+$(DEV):TSS_CPULSEID	$(DEV):TSS_CPULSEID_HST		PulseID for the current timeslot at callback time
+$(DEV):TSS_DPULSEID	$(DEV):TSS_DPULSEID_HST		PulseID difference between the active timeslot and the current
+$(DEV):TSS_CTIMESLOT	$(DEV):TSS_CTIMESLOT_HST	Current timeslot number at callback time
+$(DEV):TSS_ERTICKS	$(DEV):TSS_ERTICKS_HST		EVR clock tick counter (119MHz clock) / Elapsed time from the current fiducial to the callback time
+
+
+

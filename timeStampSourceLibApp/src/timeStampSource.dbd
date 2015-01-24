@@ -1,0 +1,5 @@
+registrar(registerUserTimeStampSourceRegistrar)
+function(TimeStampSource)
+device(longin,  INST_IO, devLiTimeStampSource, "TimeStampSource")
+device(longout, INST_IO, devLoTimeStampSource, "TimeStampSource")
+

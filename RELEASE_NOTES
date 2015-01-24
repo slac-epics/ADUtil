@@ -1,0 +1,3 @@
+ADSupport-R1-0-0: Initial port from old areaDetectorSupport to use with ADCore
+                  timeStampSourceLib for ADCore, axisTicks support for profile monitors 
+

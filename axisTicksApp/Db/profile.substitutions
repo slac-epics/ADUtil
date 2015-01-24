@@ -1,0 +1,17 @@
+file db/profile.template {
+pattern 
+  { P, ID, X_MIN_UN, X_MAX_UN, Y_MIN_UN, Y_MAX_UN, PREC, UNITS}
+  { "CAMR:XT01:", "1", "-52.45", "52.45", "-40.8", "40.8", "1", "mm"}
+  { "CAMR:XT01:", "2", "-52.45", "52.45", "-40.8", "40.8", "1", "mm"}
+  { "CAMR:XT01:", "3", "-52.45", "52.45", "-40.8", "40.8", "1", "mm"}
+#  { "CAMR:XT01:", "4", "-52.45", "52.45", "-40.8", "40.8", "1", "mm"}
+}
+
+# P: Camera prefix
+# ID: Camera ID (number)
+# X_MIN_UN: Minimum on x-axis (in UNITS)
+# X_MAX_UN: Maximum on x-axis (in UNITS)
+# Y_MIN_UN: Minimum on y-axis (in UNITS)
+# Y_MAX_UN: Maximum on y-axis (in UNITS)
+# PREC: Precision
+# UNITS: Units
