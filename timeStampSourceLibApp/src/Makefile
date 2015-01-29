@@ -8,7 +8,6 @@ include $(TOP)/configure/CONFIG
 LIBRARY_IOC += timeStampSource
 
 DBD += timeStampSource.dbd
-INC += registerTimeStampSource.c
 
 timeStampSource_DBD += timeStampSource.dbd
 
