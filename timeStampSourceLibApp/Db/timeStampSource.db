@@ -76,6 +76,26 @@ record(longout, "$(DEV):TSS_SETEC")
     field(DTYP, "TimeStampSource")
     field(OUT,  "@$(PORT) EventCode")
     field(VAL,  "$(EVNTC=0)")
+    field(FLNK, "$(DEV):TSS_SETEC_PUSH")
+}
+
+record(seq, "$(DEV):TSS_SETEC_PUSH")
+{
+    field(DOL1,  "$(DEV):TSS_SETEC")
+    field(LNK1,  "$(DEV):TSS_START.EVNT")
+}
+
+record(sub, "$(DEV):TSS_START")
+{
+    field(DESC, "Records timestamp of TSS_SETEC event")
+    field(INAM, "tssStartInit")
+    field(SNAM, "tssStart")
+    field(SCAN, "Event")
+    field(EVNT, "140") # 120Hz
+#    field(PRI,  "HIGH")
+    field(INPA, "$(DEV):TSS_START.EVNT")
+    field(PREC, "1")
+    field(TSE, "-1")
 }
 
 record(compress, "$(DEV):TSS_EVENTCODE_HST")

@@ -91,4 +91,40 @@ $(DEV):TSS_CTIMESLOT	$(DEV):TSS_CTIMESLOT_HST	Current timeslot number at callbac
 $(DEV):TSS_ERTICKS	$(DEV):TSS_ERTICKS_HST		EVR clock tick counter (119MHz clock) / Elapsed time from the current fiducial to the callback time
 
 
+-----------------------------------------------------
+TIMESTAMPSOURCE Addendum - Prosilica GX1050 at 120 Hz
+-----------------------------------------------------
 
+The ADSupport TSS library also provides timestamp for cameras whose acquisition+transfer time is
+longer than 8.1 ms, but less than 16.2 ms. That is the case of the Prosilica GX1050 running
+at 120 Hz, using an ROI of 1024x900.
+
+The transfer time is a little less then the 8.1 ms between Event Codes 140 (120 Hz), and it takes
+about 6 ms more for AD (areaDetector) to process the data. If the TSS callback described above
+is used then the image will always be tagged with the pulseId of the following image.
+
+By using the 'PipelinedTimeStampSource' the pulseId (timestamp) of the event that triggered
+the image acquisition is saved in a 2-position buffer, and later used when the image is tagged.
+
+The $(DEV):TSS_START is triggered on the $(DEV):TSS_SETEC event and it records the current
+EVR timestamp. When the image acquisition is finished AD calls the PipelinedTimeStampSource
+callback, which takes the timestamp saved by the record a couple of $(DEV):TSS_SETEC events
+before - IFF the $(DEV):TSS_SETEC event is 140 (120 Hz). If the $(DEV):TSS_SETEC is not 140
+then the timestamping behaves the same way as above.
+
+registerUserTimeStampSource("<PORT_NAME>", "PipelinedTimeStampSource")
+
+The $(DEV):TSS_START record also starts a perfMeasure timer to measure the time between the
+trigger and image timestamping. The command 'dbior drvPerfMeasure 2' shows details about
+the measurement. The following is the measurement of the Prosilica GX1050 running at 120Hz
+with ROI of 1024x900 and offset of 62 in Y (needed for the 120 Hz operation):
+
+epics> dbior drvPerfMeasure 2
+Driver: drvPerfMeasure
+Estimated Clock Speed: 2701.303929 MHz
+Driver has 1 measurement point(s) now...
+--------------------------------------------------------------------------------------------
+    Node name     Enb         Counter   Time(usec)    Minimum      Maximum          Description
+--------------------------------------------------------------------------------------------
+ImageAcquisition   1         8879 14061.33148966 9612.45779168 507189.30820465 Time between trigger and image tagging
+--------------------------------------------------------------------------------------------

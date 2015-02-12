@@ -1,3 +1,6 @@
+ADSupport-R1-1-0: Added support to tag images that are one PULSEID late when
+		  running at 120 Hz (event 140).
+
 ADSupport-R1-0-0: Initial port from old areaDetectorSupport to use with ADCore
                   timeStampSourceLib for ADCore, axisTicks support for profile monitors 
 
