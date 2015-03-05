@@ -109,22 +109,29 @@ the image acquisition is saved in a 2-position buffer, and later used when the i
 The $(DEV):TSS_START is triggered on the $(DEV):TSS_SETEC event and it records the current
 EVR timestamp. When the image acquisition is finished AD calls the PipelinedTimeStampSource
 callback, which takes the timestamp saved by the record a couple of $(DEV):TSS_SETEC events
-before - IFF the $(DEV):TSS_SETEC event is 140 (120 Hz). If the $(DEV):TSS_SETEC is not 140
-then the timestamping behaves the same way as above.
+before - if and only if the $(DEV):TSS_SETEC (usually 140) is running at 120 Hz (i.e. time
+difference between events is about 8.3ms. It the trigger time indicates a slower rate, then
+the timestamp from the preceeding event is used. This allows the driver to properly timestamp
+the images if the beam rate is lower than 120 Hz.
 
 registerUserTimeStampSource("<PORT_NAME>", "PipelinedTimeStampSource")
 
 The $(DEV):TSS_START record also starts a perfMeasure timer to measure the time between the
 trigger and image timestamping. The command 'dbior drvPerfMeasure 2' shows details about
-the measurement. The following is the measurement of the Prosilica GX1050 running at 120Hz
-with ROI of 1024x900 and offset of 62 in Y (needed for the 120 Hz operation):
+the measurement. The 'ImageAcquisition' measurement shows the time it takes from triggering up to
+the timestamping of images acquired from the Prosilica GX1050 camera running at 120Hz with
+ROI of 1024x900 and offset of 62 in Y (ROI needed for the 120 Hz operation):
 
-epics> dbior drvPerfMeasure 2
+epics> dbior drvPerfMeasure 4
 Driver: drvPerfMeasure
-Estimated Clock Speed: 2701.303929 MHz
-Driver has 1 measurement point(s) now...
+Estimated Clock Speed: 2701.358721 MHz
+Driver has 2 measurement point(s) now...
 --------------------------------------------------------------------------------------------
     Node name     Enb         Counter   Time(usec)    Minimum      Maximum          Description
 --------------------------------------------------------------------------------------------
-ImageAcquisition   1         8879 14061.33148966 9612.45779168 507189.30820465 Time between trigger and image tagging
+ImageAcquisition   1          211 14081.68478488 7770.58072177 1514594.11635838 Time between trigger and image tagging
+   TriggerPeriod   1         3457 8326.57426248 5163.78698303 11454.53795509 Delay between trigger events
 --------------------------------------------------------------------------------------------
+
+The 'TriggerPeriod' is the elapsed time between camera triggers, in this case it shows the 8.3 ms
+between the 120Hz triggers.

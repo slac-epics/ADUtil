@@ -1,3 +1,10 @@
+ADSupport-R1-1-1: Changed Pipeline tagging to use elapsed time between triggers
+		  to define whether the camera is triggering at 120 Hz. Sollely
+		  checking whether event 140 is the source of the trigger is 
+		  not enough. The actual beam rate may be lower than 120 Hz,
+		  and in this case the timestamping implemented in version
+		  ADSupport-R1-1-0 would save wrong PULSEIDs.
+
 ADSupport-R1-1-0: Added support to tag images that are one PULSEID late when
 		  running at 120 Hz (event 140).
 

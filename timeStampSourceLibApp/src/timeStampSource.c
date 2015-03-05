@@ -48,6 +48,7 @@ epicsRegisterFunction(TimeStampSource);
  * The following variables are used for the pipelined TSS
  */
 perfParm_ts *tssAcquisitionPerf;
+perfParm_ts *tssStartPerf;
 int tssAcquisitionPerfStarted = 0;
 epicsMutexId tssMutex;
 
@@ -56,6 +57,7 @@ epicsTimeStamp tssTimeStamp1;
 
 int tssTimeStampSource = 0;
 int tssSourceEvent = 0;
+int initialized = 0;
 
 /**
  * Subroutine record initialization function invoked by the $(DEV):TSS_START
@@ -67,12 +69,15 @@ int tssSourceEvent = 0;
 static long tssStartInit(subRecord *prec) {
   tssMutex = epicsMutexMustCreate();
   tssAcquisitionPerf = makePerfMeasure("ImageAcquisition", "Time between trigger and image tagging");
+  tssStartPerf = makePerfMeasure("TriggerPeriod", "Delay between trigger events");
 
   return 0;
 }
 
-void getPulseId(int sourceEvent) {
+int getPulseId(int sourceEvent) {
   epicsTimeStamp *timeStamp;
+  int is120Hz = 0;
+  epicsFloat64 elapsedTime = 0;
 
   if (tssTimeStampSource == 0) {
     timeStamp = &tssTimeStamp0;
@@ -84,9 +89,35 @@ void getPulseId(int sourceEvent) {
   evrTimeGet(timeStamp, sourceEvent);
   evrTimeGetFromPipeline(timeStamp, evrTimeCurrent, 0, 0,0,0,0);
 
-  if (sourceEvent == 140) {
+  /* Record how long it is taking between tssStart() calls */
+  if (initialized == 0) {
+    startPerfMeasure(tssStartPerf);
+    initialized = 1;
+  }
+  else {
+    /* Finish the measurement started on the previous cycle and calculate */
+    endPerfMeasure(tssStartPerf);
+    calcPerfMeasure(tssStartPerf);
+
+    /* Start measurement for next cycle */
+    startPerfMeasure(tssStartPerf);
+
+    /**
+     * If it takes less than 10ms then beam rate is 120Hz. In this case
+     * the image must be tagged with the PULSEID stored in the previous call.
+     */
+    if (tssStartPerf->elapsed_time < 14000) {
+      is120Hz = 1; 
+    }
+  }
+  
+  /*  if (sourceEvent == 140) {*/
+  if (is120Hz != 0) { 
     tssTimeStampSource = !tssTimeStampSource;
   }
+
+  /** Returns 1 if time delay indicates 120Hz operation, or 0 if event rate is lower */
+  return is120Hz;
 }
 
 static long tssStart(subRecord *prec) {
@@ -95,7 +126,7 @@ static long tssStart(subRecord *prec) {
 
   epicsMutexLock(tssMutex);
 
-  getPulseId(sourceEvent);
+  prec->val = getPulseId(sourceEvent);
 
   if (tssAcquisitionPerfStarted == 0) {
     startPerfMeasure(tssAcquisitionPerf);
