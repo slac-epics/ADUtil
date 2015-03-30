@@ -135,3 +135,55 @@ ImageAcquisition   1          211 14081.68478488 7770.58072177 1514594.11635838 
 
 The 'TriggerPeriod' is the elapsed time between camera triggers, in this case it shows the 8.3 ms
 between the 120Hz triggers.
+
+
+
+----------------------------------------------------------
+PULSEID waveform record
+----------------------------------------------------------
+
+The PULSEID waveform has been implement a part of timestamp source in ADSUPPORT.
+Thus, ioc engineer needs to follow up the instruction for timestamp source library above.
+the PULSEID waveform need its own database file. ioc engineer needs to add the following 
+line into the Makefile file in Db directory
+
+	DB_INSTALLS += $(ADSUPPORT)/db/aSubPulseId.db
+
+
+The PULSEID wavefrom requires the attribute plugin. The attribute plugin provicdes timestamp information to the PULSEID waveform.
+Thus, ioc engineer needs to setup both attribute plugin and PULSEID wavefrom in "st.cmd" file.
+Please, look at the follwoing example. We assumed, the PULSEID waveform archive pulse ids from a fileplugin which saves image files.
+The followings should be allocated before the iocInit().
+
+	# Create an NDAttribute plugin with 8 attributes
+	NDAttrConfigure("ATTR$(ID)", $(QSIZE), 0, "$(FILE_PORT)", 0, 1, 0, 0, 0)
+	dbLoadRecords("db/NDPluginBase.template", "P=$(PREFIX):,R=Attr$(ID):,    PORT=ATTR$(ID),ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(FILE_PORT),NDARRAY_ADDR=0")
+	dbLoadRecords("db/NDAttribute.template",  "P=$(PREFIX):,R=Attr$(ID):,    PORT=ATTR$(ID),ADDR=0,TIMEOUT=1,NCHANS=$(NCHANS)")
+	dbLoadRecords("db/NDAttributeN.template", "P=$(PREFIX):,R=Attr$(ID)_TSNS:,  PORT=ATTR$(ID),ADDR=0,TIMEOUT=1,NCHANS=$(NCHANS)")
+
+	# Prepare PulseID waveform
+	dbLoadRecords("db/aSubPulseId.db", "P=$(PREFIX):,R=Attr$(ID)_TSNS:,NCHANS=$(NCHANS)")
+
+
+After the iocInit(), we need to do the followings to set up the attribute plugin.
+
+	dbpf("$(PREFIX):Attr$(ID)_TSNS:AttrName", "NDArrayEpicsTSnSec")
+	dbpf("$(PREFIX):Attr$(ID)_TSNS:TSArrayValue.FLNK", "$(PREFIX):Attr$(ID)_TSNS:PulseIdArrayValue PP")
+	dbpf("$(PREFIX):Attr$(ID):EnableCallbacks", "Enable")
+	dbpf("$(PREFIX):Attr$(ID):TSControl", "Erase/Start")
+
+
+Operation:
+
+Before saving file by the file plugin, need to caput ZERO (or "Erase/Start") to "$(PREFIX):Attr$(ID):TSControl". It will reset the previous pulse id archiving
+in the waveform and make it ready for next archiving
+
+	caput "$(PREFIX):Attr$(ID):TSControl" 0
+
+
+After finishing file saving, you can read out pulse ids from the following PV.
+
+	"$(PREFIX):Attr$(ID)_TSNS:PulseIdArrayValue"
+
+
+
