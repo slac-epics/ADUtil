@@ -1,0 +1,11 @@
+record(aSub, "$(P)$(R)PulseIdArrayValue")
+{
+    field(INAM, "aSubPulseIdInit")
+    field(SNAM, "aSubPulseId")
+    field(SCAN, "Passive")
+    field(FTA, "LONG")
+    field(NOA, "$(NCHANS)")
+    field(INPA, "$(P)$(R)TSArrayValue NPP NMS")
+    field(FTVA, "LONG")
+    field(NOVA, "$(NCHANS)")
+}

@@ -5,4 +5,5 @@ function(tssStart)
 function(PipelinedTimeStampSource)
 device(longin,  INST_IO, devLiTimeStampSource, "TimeStampSource")
 device(longout, INST_IO, devLoTimeStampSource, "TimeStampSource")
-
+function(aSubPulseIdInit)
+function(aSubPulseId)

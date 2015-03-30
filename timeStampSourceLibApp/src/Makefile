@@ -9,9 +9,8 @@ LIBRARY_IOC += timeStampSource
 
 DBD += timeStampSource.dbd
 
-timeStampSource_DBD += timeStampSource.dbd
-timeStampSource_DBD += drvPerfMeasure.dbd
 
+timeStampSource_SRCS += aSubPulseId.c
 timeStampSource_SRCS += timeStampSource.c
 timeStampSource_SRCS += registerTimeStampSource.c
 timeStampSource_SRCS += devTimeStampSource.c

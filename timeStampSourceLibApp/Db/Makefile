@@ -12,6 +12,7 @@ include $(TOP)/configure/CONFIG
 # databases, templates, substitutions like this
 # ==================================================
 DB += timeStampSource.db
+DB += aSubPulseId.db
 
 # ==================================================
 
