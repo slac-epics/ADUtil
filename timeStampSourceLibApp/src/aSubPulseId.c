@@ -1,4 +1,4 @@
-#include <aSubRecord.h>   i       /* for sgtruct aSubRecord */
+#include <aSubRecord.h>           /* for sgtruct aSubRecord */
 #include <registryFunction.h>     /* for epics register function  */
 #include <epicsExport.h>          /* for epicsExport              */
 
@@ -21,6 +21,9 @@ static long aSubPulseId(aSubRecord *prec)
 
     for(i = 0; i < prec->nea; i++) {
         v[i] = a[i] & LOWER_17BITS_MASK;
+    }
+    for( ; i < prec->nova ;i++) {
+        v[i] =0;
     }
     prec->neva = prec->nea;
 
