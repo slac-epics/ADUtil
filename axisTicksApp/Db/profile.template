@@ -201,6 +201,7 @@ record(dfanout, "$(P)$(ID):EnableCB") {
   field(OUTA, "$(P)$(ID):ArrayCallbacks PP")
   field(OUTB, "$(P)$(ID):Acquire PP")
   field(OUTC, "$(P)$(ID):Image:EnableCallbacks PP")
+  field(OUTD, "$(P)$(ID):TSS_IMAGE_ACQUISITION PP")
 }
 
 record(aSub, "$(P)$(ID):ROI:X_TICKS") {

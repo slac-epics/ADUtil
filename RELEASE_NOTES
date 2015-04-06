@@ -1,3 +1,9 @@
+ADSupport-R1-3-0: Support for FIFO timestamping - improvement over the pipeline
+		  tagging introduced in version R1-1-1. This has been tested
+		  with the Prosilica GX1050 only.
+
+ADSupport-R1-2-0: Support for PULSEID waveform record
+
 ADSupport-R1-1-1: Changed Pipeline tagging to use elapsed time between triggers
 		  to define whether the camera is triggering at 120 Hz. Sollely
 		  checking whether event 140 is the source of the trigger is 

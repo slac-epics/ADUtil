@@ -85,6 +85,37 @@ record(seq, "$(DEV):TSS_SETEC_PUSH")
     field(LNK1,  "$(DEV):TSS_START.EVNT")
 }
 
+#
+# This detects when the camera acquisition starts
+# and causes the PulseIDs to be saved in the pipeline
+#record(seq, "$(DEV):TSS_ACQ_PUSH")
+#{
+#    field(DOL1,  "$(DEV):Acquire PP")
+#    field(LNK1,  "$(DEV):TSS_IMAGE_ACQ")
+#}
+# The above did not work, this is currently done by the EnableCB PV (OUTD field),
+# which is declared in the profile.template, in the axisTickApp/Db directory
+#
+# TODO: change this scheme, find a better way to trigger the TSS_IMAGE_ACQUISITION
+# processing. This is required to start saving PULSEIDs to later tag the images
+#
+
+record(sub, "$(DEV):TSS_IMAGE_ACQUISITION") 
+{
+    field(DESC, "Start/Stop PULSEID logging")
+    field(INAM, "")
+    field(SCAN, "Passive")
+    field(SNAM, "tssImageAcquisition")
+    field(INPA, "$(DEV):Acquire.VAL")
+}
+
+record(sub, "$(DEV):TSS_IMAGE_ACQUSITION_RESET")
+{
+    field(DESC, "Reset perfMeasure counters")
+    field(INAM, "")
+    field(SNAM, "tssImageAcquisitionReset")
+}
+
 record(sub, "$(DEV):TSS_START")
 {
     field(DESC, "Records timestamp of TSS_SETEC event")
@@ -96,6 +127,111 @@ record(sub, "$(DEV):TSS_START")
     field(INPA, "$(DEV):TSS_START.EVNT")
     field(PREC, "1")
     field(TSE, "-1")
+#    field(DISV, "0")
+}
+
+record(longin, "$(DEV):TSS_INVALID_PULSEID_COUNT")
+{
+    field(DESC, "Count number of invalid PULSEIDS")
+    field(DTYP, "TimeStampSource")
+    field(INP,  "@$(PORT) PulseIdInvalidCount")
+    field(SCAN, "I/O Intr")
+    field(PRIO, "LOW")
+    field(TSE, "-2")
+    field(MDEL, "-1")
+}
+
+record(longin, "$(DEV):TSS_ELAPSED")
+{
+    field(DESC, "Current acquisition elapsed time")
+    field(DTYP, "TimeStampSource")
+    field(INP,  "@$(PORT) ElapsedTime")
+    field(SCAN, "I/O Intr")
+    field(PRIO, "LOW")
+    field(TSE, "-2")
+    field(MDEL, "-1")
+    field(EGU, "us")
+}
+
+record(longin, "$(DEV):TSS_ELAPSED_MIN")
+{
+    field(DESC, "Min acquisition elapsed time")
+    field(DTYP, "TimeStampSource")
+    field(INP,  "@$(PORT) ElapsedTimeMin")
+    field(SCAN, "I/O Intr")
+    field(PRIO, "LOW")
+    field(TSE, "-2")
+    field(MDEL, "-1")
+    field(EGU, "us")
+}
+
+record(calc, "$(DEV):TSS_EXPECTED_TRANSMISSION_TIME")
+{
+    field(DESC, "Expected transmission time")
+    field(INPA, "$(DEV):SizeX_RBV")
+    field(INPB, "$(DEV):SizeY_RBV")
+    field(INPC, "2000000000") # Link speed (2Gbps)
+    field(CALC, "(A*B*2*8/C)*1000*1000")
+    field(EGU, "us")
+    field(SCAN, "2 second")
+    field(PINI, "YES")
+}
+
+record(longin, "$(DEV):TSS_ELAPSED_MAX")
+{
+    field(DESC, "Max acquisition elapsed time")
+    field(DTYP, "TimeStampSource")
+    field(INP,  "@$(PORT) ElapsedTimeMax")
+    field(SCAN, "I/O Intr")
+    field(PRIO, "LOW")
+    field(TSE, "-2")
+    field(MDEL, "-1")
+    field(EGU, "us")
+}
+
+record(longin, "$(DEV):TSS_IMAGE_LOST_COUNT")
+{
+    field(DESC, "Count number of images lost")
+    field(DTYP, "TimeStampSource")
+    field(INP,  "@$(PORT) ImageLostCount")
+    field(SCAN, "I/O Intr")
+    field(PRIO, "LOW")
+    field(TSE, "-2")
+    field(MDEL, "-1")
+}
+
+record(longin, "$(DEV):TSS_BUFFER_COUNT")
+{
+    field(DESC, "Number of images pending")
+    field(DTYP, "TimeStampSource")
+    field(INP,  "@$(PORT) BufferCount")
+    field(SCAN, "I/O Intr")
+    field(PRIO, "LOW")
+    field(TSE, "-2")
+    field(MDEL, "-1")
+    field(HHSV, "MAJOR")
+    field(HIHI, "2")
+}
+
+record(longin, "$(DEV):TSS_PULSEID_LOST")
+{
+    field(DESC, "Latest PULSEID lost")
+    field(DTYP, "TimeStampSource")
+    field(INP,  "@$(PORT) PulseIdLost")
+    field(SCAN, "I/O Intr")
+    field(PRIO, "LOW")
+    field(TSE, "-2")
+    field(MDEL, "-1")
+    field(FLNK, "$(DEV):TSS_PULSEID_LOST_HST")
+}
+
+record(compress, "$(DEV):TSS_PULSEID_LOST_HST")
+{
+    field(DESC, "History buffer for lost PULSEIDs")
+    field(INP,  "$(DEV):TSS_PULSEID_LOST")
+    field(ALG,  "Circular Buffer")
+    field(NSAM, "$(NSAM=256)")
+    field(TSEL, "$(DEV):TSS_PULSEID_LOST.TIME")
 }
 
 record(compress, "$(DEV):TSS_EVENTCODE_HST")
@@ -142,6 +278,7 @@ record(compress, "$(DEV):TSS_CTIMESLOT_HST")
     field(NSAM, "$(NSAM=256)")
     field(TSEL, "$(DEV):TSS_CTIMESLOT.TIME")
 }
+
 record(compress, "$(DEV):TSS_ERTICKS_HST")
 {
     field(DESC, "History buffer for evr tick counter")

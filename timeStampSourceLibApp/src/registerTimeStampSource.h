@@ -17,6 +17,7 @@ typedef  struct {
     char             functionName[32];
     void (*pFunction)(void *userPvt, epicsTimeStamp *pTimeStamp);
     IOSCANPVT        ioScanPvt;
+    IOSCANPVT        slowIoScanPvt;
     ELLLIST          recList;
     epicsMutexId     lock;
     epicsInt32       eventCode;
@@ -30,6 +31,7 @@ typedef  struct {
     epicsUInt32      erTicks;
     evrModifier_ta   active_modifier_a;      /* is not implemented */
     evrModifier_ta   current_modifier_a;     /* implemented but, no device support */
+    epicsUInt32      image_lost_count;
 
 } adTimeStampSource_t, *adTimeStampSource_p;
 

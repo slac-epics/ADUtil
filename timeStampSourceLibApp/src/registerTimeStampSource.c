@@ -72,6 +72,7 @@ adTimeStampSource_p  alloc_timeStampSource(const char *portName, const char *fun
     pTss->eventCode = 0;
     pTss->lock = epicsMutexMustCreate();
     scanIoInit(&pTss->ioScanPvt);
+    scanIoInit(&pTss->slowIoScanPvt);
     ellInit(&pTss->recList);
 
     ellAdd(&timeStampSourceList, &pTss->node);

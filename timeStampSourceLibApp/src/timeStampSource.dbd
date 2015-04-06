@@ -1,5 +1,7 @@
 registrar(registerUserTimeStampSourceRegistrar)
 function(TimeStampSource)
+function(tssImageAcquisitionReset)
+function(tssImageAcquisition)
 function(tssStartInit)
 function(tssStart)
 function(PipelinedTimeStampSource)

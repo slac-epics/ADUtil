@@ -92,51 +92,56 @@ $(DEV):TSS_ERTICKS	$(DEV):TSS_ERTICKS_HST		EVR clock tick counter (119MHz clock)
 
 
 -----------------------------------------------------
-TIMESTAMPSOURCE Addendum - Prosilica GX1050 at 120 Hz
+TIMESTAMPSOURCE - FIFO PulseId
 -----------------------------------------------------
 
-The ADSupport TSS library also provides timestamp for cameras whose acquisition+transfer time is
-longer than 8.1 ms, but less than 16.2 ms. That is the case of the Prosilica GX1050 running
-at 120 Hz, using an ROI of 1024x900.
+The ADSupport TSS library provides FIFO pulseID support that allows images to be properly
+tagged even if the transmission and the image processing time takes longer than the time
+between pulse IDs (8.333 ms).
 
-The transfer time is a little less then the 8.1 ms between Event Codes 140 (120 Hz), and it takes
-about 6 ms more for AD (areaDetector) to process the data. If the TSS callback described above
-is used then the image will always be tagged with the pulseId of the following image.
+When the image acquisition is enabled (PV :Acquisition, defined in the
+axisTicksApp/Db/profile.template file) the TSS library starts saving the PulseIDs generated
+by event 140.
 
-By using the 'PipelinedTimeStampSource' the pulseId (timestamp) of the event that triggered
-the image acquisition is saved in a 2-position buffer, and later used when the image is tagged.
+At the end of the image acquisition (at callback time), the PulseID previously saved
+is used to tag the image. The PulseIDs are saved in a ring buffer and tagged to the images
+in the order of their arrival.
 
-The $(DEV):TSS_START is triggered on the $(DEV):TSS_SETEC event and it records the current
-EVR timestamp. When the image acquisition is finished AD calls the PipelinedTimeStampSource
-callback, which takes the timestamp saved by the record a couple of $(DEV):TSS_SETEC events
-before - if and only if the $(DEV):TSS_SETEC (usually 140) is running at 120 Hz (i.e. time
-difference between events is about 8.3ms. It the trigger time indicates a slower rate, then
-the timestamp from the preceeding event is used. This allows the driver to properly timestamp
-the images if the beam rate is lower than 120 Hz.
+The callback 'PipelinedTimeStampSource' should be used to enable the FIFO image tagging.
 
-registerUserTimeStampSource("<PORT_NAME>", "PipelinedTimeStampSource")
+For every PulseID stored in the ring buffer a perfMeasure sampling point is started. Each
+sampling point will measure the time elapsed between the time the event is received and the
+time the image is time stamped. This is a snapshot of the perfMeasure samples:
 
-The $(DEV):TSS_START record also starts a perfMeasure timer to measure the time between the
-trigger and image timestamping. The command 'dbior drvPerfMeasure 2' shows details about
-the measurement. The 'ImageAcquisition' measurement shows the time it takes from triggering up to
-the timestamping of images acquired from the Prosilica GX1050 camera running at 120Hz with
-ROI of 1024x900 and offset of 62 in Y (ROI needed for the 120 Hz operation):
-
-epics> dbior drvPerfMeasure 4
+epics> dbior drvPerfMeasure 3
 Driver: drvPerfMeasure
-Estimated Clock Speed: 2701.358721 MHz
-Driver has 2 measurement point(s) now...
+Estimated Clock Speed: 2601.265163 MHz
+Driver has 7 measurement point(s) now...
 --------------------------------------------------------------------------------------------
     Node name     Enb         Counter   Time(usec)    Minimum      Maximum          Description
 --------------------------------------------------------------------------------------------
-ImageAcquisition   1          211 14081.68478488 7770.58072177 1514594.11635838 Time between trigger and image tagging
-   TriggerPeriod   1         3457 8326.57426248 5163.78698303 11454.53795509 Delay between trigger events
+ImageAcquisition-0   1          164 6368.70790246 5612.61658660 6382.42661154 Time between trigger and image tagging
+ImageAcquisition-1   1          165 6373.01349966 6259.99272647 39578.87356676 Time between trigger and image tagging
+ImageAcquisition-2   1          164 6369.64129443 6215.04690485 6401.03217344 Time between trigger and image tagging
+ImageAcquisition-3   1          165 6371.43273040 6212.51044679 139567.31830495 Time between trigger and image tagging
+ImageAcquisition-4   1          164 6367.47388755 6238.98256542 6381.84112721 Time between trigger and image tagging
 --------------------------------------------------------------------------------------------
+Number of Stress test threads: 0
 
-The 'TriggerPeriod' is the elapsed time between camera triggers, in this case it shows the 8.3 ms
-between the 120Hz triggers.
+If the elapsed time is longer than 2 PulseIDs (i.e. 16.666ms) than it is assumed one image
+has been lost, which results in a PulseID being removed from the ring buffer, and not used
+for image tagging. If the delay is longer more PulseIDs are removed.
 
+These are some helper PVs to monitor the acquisition time stamping:
 
+$(DEV):TSS_BUFFER_COUNT - counts the number of pending PulseIDs in the buffer
+$(DEV):TSS_ELAPSED - last elapsed time between trigger and image tagging
+$(DEV):TSS_ELAPSED_MIN - minimum TSS_ELAPSED recorded time 
+$(DEV):TSS_ELAPSED_MAX - maximum TSS_ELAPSED recorded time
+$(DEV):TSS_EXPECTED_TRANSMISSION_TIME - calculeted wire transmission time based on the image ROI size
+$(DEV):TSS_IMAGE_LOST_COUNT - number of images presumed lost because of long acquisition delays
+$(DEV):TSS_PULSEID_LOST - PULSEID of the last lost image
+$(DEV):TSS_IMAGE_ACQUISITION_RESET - reset TSS_ELAPSED times
 
 ----------------------------------------------------------
 PULSEID waveform record
