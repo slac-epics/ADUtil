@@ -260,10 +260,11 @@ static void tssSync() {
   double tolerance = fiducial * 2;
 
   if (tssBuffer[tssBufferTail].tssAcquisitionPerf->elapsed_time > tolerance) {
+    /*
     printf("Long elapsed time detected: %f (%d)",
 	   tssBuffer[tssBufferTail].tssAcquisitionPerf->elapsed_time,
 	   tssBuffer[tssBufferTail].tssTimeStamp.nsec & 0x1FFFF);
-    
+    */
     double takeAway = tssBuffer[tssBufferTail].tssAcquisitionPerf->elapsed_time - tolerance;
 
     do {
