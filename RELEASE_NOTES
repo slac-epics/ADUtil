@@ -1,3 +1,8 @@
+ADSupport-R1-4-0: Support new plugin: NDStats2 plugin
+                  - introduce intensity threshold high to cutout local peaks in beam bundle
+                  for centroid calculation
+                  - introduce Gaussian fitting for beam position
+
 ADSupport-R1-3-0: Support for FIFO timestamping - improvement over the pipeline
 		  tagging introduced in version R1-1-1. This has been tested
 		  with the Prosilica GX1050 only.

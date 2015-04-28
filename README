@@ -192,3 +192,61 @@ After finishing file saving, you can read out pulse ids from the following PV.
 
 
 
+
+----------------
+Gaussian Fitting
+----------------
+
+Introducing a new plugin namely NDPluginStats2 which has Gaussian fitting algorithm.
+The Gaussian shows more stable and less jitter compare to the existing centroid calculation.
+
+1. Set up requirement
+- need put the following lines into Makefile for ioc applicaton source directory
+
+<application_name>_DBD  += NDPluginStats2.dbd
+<applicaiton_name>_LIBS += NDPluginStats2
+
+- need to put the following line into Makefile for Db directory to install new template
+
+DB_INSTALLS += $(ADSUPPORT)/db/NDStats2.template
+DB_INSTALLS += $(ADSUPPORT)/db/profile2.template
+
+- need to replace the following lines into iocBoot/common/areaDetector.cfg
+
+NDStats2Configure("STATS$(ID)", $(QSIZE), $(BLOCKING), "ROI$(ID)", 0, 0, 0)
+dbLoadRecords("db/NDStats2.template",     "P=$(PREFIX):$(ID),R=:Stats:,  PORT=STATS$(ID),ADDR=0,TIMEOUT=1,HIST_SIZE=256,XSIZE=$(XSIZE),YSIZE=$(YSIZE),NCHANS=$(NCHANS)")
+
+
+- need to load up "profile2.template" instead of "profile.template"
+  put the following line into st.cmd
+
+dbLoadRecords("db/profile2.template","P=$(PREFIX):, ID=$(ID), XSIZE=$(XSIZE), X_OFF=$(X_OFF), YSIZE=$(YSIZE), Y_OFF=$(Y_OFF), RESOLUTION=$(RESOLUTION), PREC=1, EGU=$(EGU)")
+
+
+2. Update EDM screens
+
+- need to replace the cameras edm screen with the following file
+
+$(ADSUPPORT)/gfitApp/edm/cameras.edl
+
+- need to replace  the settings edm screen with the following file
+
+$(ADSUPPORT)/gfitApp/edm/prosilicaSettings.edl
+
+
+3. New PVs for the Gaussian Fitting
+
+Center position (x) for Gaussian        <PREFIX>:Stats:XGpos_RBV
+Center position (y) for Gaussian        <PREFIX>:Stats:YGpos_RBV
+Width (x) of Gaussian                   <PREFIX>:Stats:GWidthX_mm_RBV
+Width (y) of Gaussian                   <PREFIX>:Stats:GWidthY_mm_RBV
+
+4. New PV for Intensity Threshold High
+- Introduce new PV to cut out higher intensity pixels from the centroid/guassian calculation.
+- To disable the High threshold, just put a large number (ex, 65536 for 16 bits camera, or 256 for 8 bits camera).
+
+Set Threshold High                      <PREFIX>:Stats:CentroidThresholdHi
+Read out Threshold High                 <PREFIX>:Stats:CentroidThresholdHi_RBV
+
+
+
