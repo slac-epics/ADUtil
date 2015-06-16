@@ -2,6 +2,10 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <math.h>
+
+#include <epicsExport.h>
+#include <epicsTypes.h>
+
 #define NR_END 1
 #define FREE_ARG char*
 
@@ -9,8 +13,13 @@
 #define SPREAD 0.01
 #define ASIZE  3072
 
+int                     DEBUG_GFIT =0;
+epicsExportAddress(int, DEBUG_GFIT);
+
 void nrerror(char error_text[])
 {
+        if(!DEBUG_GFIT) return;
+
         printf("Numerical Recipes run-time error...\n");
         printf("%s\n",error_text);
 }
