@@ -1,3 +1,5 @@
+ADSupport-R1-4-1: Remove debugging message from Gaussian Fitting in NDStats2 plugin
+
 ADSupport-R1-4-0: Support new plugin: NDStats2 plugin
                   - introduce intensity threshold high to cutout local peaks in beam bundle
                   for centroid calculation
