@@ -1,0 +1,32 @@
+#
+# pluginImage.substitutions
+#
+
+file NDPluginBase.template
+{
+	{
+	P=$(CAM):,
+	R=$(IMAGE_NAME):,
+	PORT=$(IMAGE_NAME),
+	ADDR=0,
+	TIMEOUT=1,
+	NDARRAY_PORT=$(PLUGIN_SRC),
+	NDARRAY_ADDR=0,
+	BIT_DEPTH=$(IMAGE_BIT_DEPTH),
+	}
+}
+
+file NDStdArrays.template
+{
+	{
+	P=$(CAM):,
+	R=$(IMAGE_NAME):,
+	PORT=$(IMAGE_NAME),
+	TYPE=$(IMAGE_TYPE),
+	FTVL=$(IMAGE_FTVL),
+	NELEMENTS=$(IMAGE_NELM),
+	ADDR=0,
+	TIMEOUT=1
+	}
+}
+

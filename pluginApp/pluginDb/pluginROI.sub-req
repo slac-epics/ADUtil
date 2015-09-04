@@ -1,0 +1,14 @@
+#
+# gigECam pluginROI Autosave file
+#
+
+file NDPluginBase_settings.req
+{
+    {   P = "$(CAM):",	R = "ROI$(N):"	}
+}
+
+file NDROI_settings.req
+{
+    {   P = "$(CAM):",	R = "ROI$(N):"	}
+}
+

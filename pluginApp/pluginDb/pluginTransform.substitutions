@@ -1,0 +1,28 @@
+#
+# pluginTransform.substitutions
+#
+
+file NDPluginBase.template
+{
+	{
+	P=$(CAM):,
+	R=Trans$(N):,
+	PORT=Trans$(N),
+	ADDR=0,
+	TIMEOUT=1,
+	NDARRAY_PORT=$(PLUGIN_SRC),
+	NDARRAY_ADDR=0
+	}
+}
+
+file NDTransform.template
+{
+	{
+	P=$(CAM):,
+	R=Trans$(N):,
+	PORT=Trans$(N),
+	ADDR=0,
+	TIMEOUT=1
+	}
+}
+

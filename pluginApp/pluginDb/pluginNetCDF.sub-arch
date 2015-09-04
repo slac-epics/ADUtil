@@ -1,0 +1,19 @@
+#
+# gigECam pluginNetCDF Archive file
+#
+
+file NDPluginBase.tpl-arch
+{
+    {   P = "$(CAM):",	R = "NetCDF$(N):"	}
+}
+
+file NDFile.tpl-arch
+{
+    {   P = "$(CAM):",	R = "NetCDF$(N):"	}
+}
+
+file NDFileNetCDF.tpl-arch
+{
+    {   P = "$(CAM):",	R = "NetCDF$(N):"	}
+}
+

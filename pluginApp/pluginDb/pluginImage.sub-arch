@@ -1,0 +1,14 @@
+#
+# gigECam pluginImage Archive file
+#
+
+file NDPluginBase.tpl-arch
+{
+    {   P = "$(CAM):",	R = "$(IMAGE_NAME):"	}
+}
+
+file NDStdArrays.tpl-arch
+{
+    {   P = "$(CAM):",	R = "$(IMAGE_NAME):"	}
+}
+

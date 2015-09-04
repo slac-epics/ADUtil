@@ -1,0 +1,13 @@
+#
+# gigECam pluginColorConvert Archive file
+#
+
+file NDPluginBase.tpl-arch
+{
+    {   P = "$(CAM):",	R	= "CC$(N):"	}
+}
+
+file NDColorConvert.tpl-arch
+{
+    {   P = "$(CAM):",	R	= "CC$(N):"	}
+}

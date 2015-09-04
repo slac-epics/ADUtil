@@ -1,0 +1,14 @@
+#
+# gigECam pluginTransform Archive file
+#
+
+file NDPluginBase.tpl-arch
+{
+    {   P = "$(CAM):",	R = "Trans$(N):"	}
+}
+
+file NDTransform.tpl-arch
+{
+    {   P = "$(CAM):",	R = "Trans$(N):"	}
+}
+

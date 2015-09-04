@@ -1,0 +1,19 @@
+#
+# gigECam pluginJPEG Autosave file
+#
+
+file NDPluginBase_settings.req
+{
+    {   P = "$(CAM):",	R = "JPEG$(N):"	}
+}
+
+file NDFile_settings.req
+{
+    {   P = "$(CAM):",	R = "JPEG$(N):"	}
+}
+
+file NDFileJPEG_settings.req
+{
+    {   P = "$(CAM):",	R = "JPEG$(N):"	}
+}
+

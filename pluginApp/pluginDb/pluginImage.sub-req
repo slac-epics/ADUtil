@@ -1,0 +1,14 @@
+#
+# gigECam pluginImage Autosave file
+#
+
+file NDPluginBase_settings.req
+{
+    {   P = "$(CAM):",	R = "$(IMAGE_NAME):"	}
+}
+
+file NDStdArrays_settings.req
+{
+    {   P = "$(CAM):",	R = "$(IMAGE_NAME):"	}
+}
+

@@ -1,0 +1,14 @@
+#
+# gigECam pluginROI Archive file
+#
+
+file NDPluginBase.tpl-arch
+{
+    {   P = "$(CAM):",	R = "ROI$(N):"	}
+}
+
+file NDROI.tpl-arch
+{
+    {   P = "$(CAM):",	R = "ROI$(N):"	}
+}
+

@@ -1,0 +1,28 @@
+#
+# gigECam pluginOverlay Autosave file
+#
+
+file NDPluginBase_settings.req
+{
+    {   P = "$(CAM):",	R = "Over$(N):"	}
+}
+
+file NDOverlay_settings.req
+{
+    {   P = "$(CAM):",	R = "Over$(N):"	}
+}
+
+file NDOverlayN_settings.req
+{
+	pattern
+	{ P,			R				}
+	{ "$(CAM):",	"Over$(N):1:"	}
+	{ "$(CAM):",	"Over$(N):2:"	}
+	{ "$(CAM):",	"Over$(N):3:"	}
+	{ "$(CAM):",	"Over$(N):4:"	}
+	{ "$(CAM):",	"Over$(N):5:"	}
+	{ "$(CAM):",	"Over$(N):6:"	}
+	{ "$(CAM):",	"Over$(N):7:"	}
+	{ "$(CAM):",	"Over$(N):8:"	}
+}
+

@@ -1,0 +1,28 @@
+#
+# gigECam pluginOverlay Archive file
+#
+
+file NDPluginBase.tpl-arch
+{
+    {   P = "$(CAM):",	R = "Over$(N):"	}
+}
+
+file NDOverlay.tpl-arch
+{
+    {   P = "$(CAM):",	R = "Over$(N):"	}
+}
+
+file NDOverlayN.tpl-arch
+{
+	pattern
+	{ P,			R				}
+	{ "$(CAM):",	"Over$(N):1:"	}
+	{ "$(CAM):",	"Over$(N):2:"	}
+	{ "$(CAM):",	"Over$(N):3:"	}
+	{ "$(CAM):",	"Over$(N):4:"	}
+	{ "$(CAM):",	"Over$(N):5:"	}
+	{ "$(CAM):",	"Over$(N):6:"	}
+	{ "$(CAM):",	"Over$(N):7:"	}
+	{ "$(CAM):",	"Over$(N):8:"	}
+}
+

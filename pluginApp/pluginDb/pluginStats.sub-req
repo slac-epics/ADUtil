@@ -1,0 +1,14 @@
+#
+# gigECam pluginStats Autosave file
+#
+
+file NDPluginBase_settings.req
+{
+    {   P = "$(CAM):",	R = "Stats$(N):"	}
+}
+
+file NDStats_settings.req
+{
+    {   P = "$(CAM):",	R = "Stats$(N):"	}
+}
+

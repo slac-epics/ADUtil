@@ -1,0 +1,40 @@
+#
+# pluginNetCDF.substitutions
+#
+
+file NDPluginBase.template
+{
+	{
+	P=$(CAM):,
+	R=NetCDF$(N):,
+	PORT=NetCDF$(N),
+	ADDR=0,
+	TIMEOUT=1,
+	NDARRAY_PORT=$(PLUGIN_SRC),
+	NDARRAY_ADDR=0,
+	BIT_DEPTH=$(IMAGE_BIT_DEPTH),
+	}
+}
+
+file NDFile.template
+{
+	{
+	P=$(CAM):,
+	R=NetCDF$(N):,
+	PORT=NetCDF$(N),
+	ADDR=0,
+	TIMEOUT=1
+	}
+}
+
+file NDFileNetCDF.template
+{
+	{
+	P=$(CAM):,
+	R=NetCDF$(N):,
+	PORT=NetCDF$(N),
+	ADDR=0,
+	TIMEOUT=1
+	}
+}
+

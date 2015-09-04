@@ -1,0 +1,19 @@
+#
+# gigECam pluginMagick Archive file
+#
+
+file NDPluginBase.tpl-arch
+{
+    {   P = "$(CAM):",	R = "Magick$(N):"	}
+}
+
+file NDFile.tpl-arch
+{
+    {   P = "$(CAM):",	R = "Magick$(N):"	}
+}
+
+file NDFileMagick.tpl-arch
+{
+    {   P = "$(CAM):",	R = "Magick$(N):"	}
+}
+

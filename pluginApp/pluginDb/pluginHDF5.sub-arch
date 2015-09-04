@@ -1,0 +1,19 @@
+#
+# gigECam pluginHDF5 Archive file
+#
+
+file NDPluginBase.tpl-arch
+{
+    {   P = "$(CAM):",	R = "HDF5$(N):"	}
+}
+
+file NDFile.tpl-arch
+{
+    {   P = "$(CAM):",	R = "HDF5$(N):"	}
+}
+
+file NDFileHDF5.tpl-arch
+{
+    {   P = "$(CAM):",	R = "HDF5$(N):"	}
+}
+

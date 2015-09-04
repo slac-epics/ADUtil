@@ -1,0 +1,13 @@
+#
+# gigECam pluginColorConvert Autosave file
+#
+
+file NDPluginBase_settings.req
+{
+    {   P = "$(CAM):",	R	= "CC$(N):"	}
+}
+
+file NDColorConvert_settings.req
+{
+    {   P = "$(CAM):",	R	= "CC$(N):"	}
+}

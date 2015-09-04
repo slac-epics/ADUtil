@@ -1,0 +1,121 @@
+4 0 1
+beginScreenProperties
+major 4
+minor 0
+release 1
+x 1924
+y 1630
+w 174
+h 146
+font "helvetica-medium-r-12.0"
+ctlFont "helvetica-medium-r-12.0"
+btnFont "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 7
+textColor index 14
+ctlFgColor1 index 14
+ctlFgColor2 index 0
+ctlBgColor1 index 0
+ctlBgColor2 index 14
+topShadowColor index 0
+botShadowColor index 14
+title "$(CAM) THUMBNAIL"
+showGrid
+snapToGrid
+gridSize 4
+endScreenProperties
+
+# (Hoff Video)
+object TwoDProfileMonitorClass
+beginObjectProperties
+major 4
+minor 2
+release 1
+x 0
+y 16
+w 174
+h 130
+dataPvStr "$(CAM):THUMBNAIL:ArrayData"
+widthPvStr "$(CAM):THUMBNAIL:ArraySize0_RBV"
+heightPvStr "$(CAM):THUMBNAIL:ArraySize1_RBV"
+dataWidth 512
+pvBasedDataSize 1
+nBitsPerPixel 8
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 0
+y 0
+w 16
+h 16
+fgColor index 14
+bgColor index 2
+topShadowColor index 7
+botShadowColor index 14
+font "helvetica-medium-r-18.0"
+buttonLabel "+"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "$(ORIG)"
+}
+closeAction {
+  0 1
+}
+setPosition {
+  0 "parentWindow"
+}
+symbols {
+  0 "CAM=$(CAM),IOC=$(IOC)"
+}
+closeDisplay {
+  0 1
+}
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 16
+y 0
+w 44
+h 14
+font "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 7
+value {
+  "$(CAM)"
+}
+autoSize
+endObjectProperties
+
+# (Text Update)
+object TextupdateClass
+beginObjectProperties
+major 10
+minor 0
+release 0
+x 128
+y 0
+w 48
+h 16
+controlPv "$(CAM):THUMBNAIL:ArrayRate_RBV"
+precision 1
+fgColor index 16
+fgAlarm
+bgColor index 12
+fill
+font "courier-medium-r-10.0"
+fontAlign "center"
+lineWidth 1
+lineAlarm
+endObjectProperties
+

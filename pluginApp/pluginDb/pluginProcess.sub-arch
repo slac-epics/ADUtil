@@ -1,0 +1,14 @@
+#
+# gigECam pluginProcess Archive file
+#
+
+file NDPluginBase.tpl-arch
+{
+    {   P = "$(CAM):",	R = "Proc$(N):"	}
+}
+
+file NDProcess.tpl-arch
+{
+    {   P = "$(CAM):",	R = "Proc$(N):"	}
+}
+

@@ -1,0 +1,19 @@
+#
+# gigECam pluginNetCDF Autosave file
+#
+
+file NDPluginBase_settings.req
+{
+    {   P = "$(CAM):",	R = "NetCDF$(N):"	}
+}
+
+file NDFile_settings.req
+{
+    {   P = "$(CAM):",	R = "NetCDF$(N):"	}
+}
+
+file NDFileNetCDF_settings.req
+{
+    {   P = "$(CAM):",	R = "NetCDF$(N):"	}
+}
+

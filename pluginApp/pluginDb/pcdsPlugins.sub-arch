@@ -1,0 +1,86 @@
+# pcdsPlugins.sub-arch autosave list
+
+file pluginImage.archive
+{
+	{	IMAGE_NAME	=	"IMAGE1"	}
+	{	IMAGE_NAME	=	"IMG_OVER2"	}
+	{	IMAGE_NAME	=	"THUMBNAIL"	}
+}
+
+file pluginROI.archive
+{
+	{	N	=	1	}
+	{	N	=	2	}
+	{	N	=	3	}
+	{	N	=	4	}
+	{	N	=	5	}
+	{	N	=	6	}
+	{	N	=	7	}
+}
+
+file pluginOverlay.archive
+{
+	{	N	=	1	}
+	{	N	=	2	}
+}
+
+file pluginFileMPEG.archive
+{
+	{	N	=	1	}
+}
+
+file pluginMJPG.archive
+{
+	{	N	=	1	}
+}
+
+file pluginStats.archive
+{
+	{	N	=	1	}
+	{	N	=	2	}
+	{	N	=	3	}
+	{	N	=	4	}
+	{	N	=	5	}
+}
+
+file pluginProcess.archive
+{
+	{	N	=	1	}
+}
+
+file pluginTransform.archive
+{
+	{	N	=	1	}
+}
+
+file pluginColorConvert.archive
+{
+	{	N	=	1	}
+	{	N	=	2	}
+}
+
+file pluginNetCDF.archive
+{
+	{	N	=	1	}
+}
+
+file pluginTIFF.archive
+{
+	{	N	=	1	}
+}
+
+file pluginJPEG.archive
+{
+	{	N	=	1	}
+}
+
+file pluginNexus.archive
+{
+	{	N	=	1	}
+}
+
+file pluginHDF5.archive
+{
+	{	N	=	1	}
+}
+

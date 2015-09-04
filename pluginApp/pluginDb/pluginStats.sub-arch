@@ -1,0 +1,14 @@
+#
+# gigECam pluginStats Archive file
+#
+
+file NDPluginBase.tpl-arch
+{
+    {   P = "$(CAM):",	R = "Stats$(N):"	}
+}
+
+file NDStats.tpl-arch
+{
+    {   P = "$(CAM):",	R = "Stats$(N):"	}
+}
+

@@ -1,0 +1,14 @@
+#
+# gigECam pluginMJPG Autosave file
+#
+
+file NDPluginBase_settings.req
+{
+    {   P = "$(CAM):",	R = "MJPG$(N):"	}
+}
+
+file ffmpegStream.tpl-req
+{
+    {   P = "$(CAM):",	R = "MJPG$(N):"	}
+}
+

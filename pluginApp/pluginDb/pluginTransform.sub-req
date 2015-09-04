@@ -1,0 +1,14 @@
+#
+# gigECam pluginTransform Autosave file
+#
+
+file NDPluginBase_settings.req
+{
+    {   P = "$(CAM):",	R = "Trans$(N):"	}
+}
+
+file NDTransform_settings.req
+{
+    {   P = "$(CAM):",	R = "Trans$(N):"	}
+}
+

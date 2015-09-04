@@ -1,0 +1,40 @@
+#
+# pluginMagick.substitutions
+#
+
+file NDPluginBase.template
+{
+	{
+	P=$(CAM):,
+	R=Magick$(N):,
+	PORT=Magick$(N),
+	ADDR=0,
+	TIMEOUT=1,
+	NDARRAY_PORT=$(PLUGIN_SRC),
+	NDARRAY_ADDR=0,
+	BIT_DEPTH=$(IMAGE_BIT_DEPTH),
+	}
+}
+
+file NDFile.template
+{
+	{
+	P=$(CAM):,
+	R=Magick$(N):,
+	PORT=Magick$(N),
+	ADDR=0,
+	TIMEOUT=1
+	}
+}
+
+file NDFileMagick.template
+{
+	{
+	P=$(CAM):,
+	R=Magick$(N):,
+	PORT=Magick$(N),
+	ADDR=0,
+	TIMEOUT=1
+	}
+}
+

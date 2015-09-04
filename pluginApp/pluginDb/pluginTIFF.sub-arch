@@ -1,0 +1,19 @@
+#
+# gigECam pluginTIFF Archive file
+#
+
+file NDPluginBase.tpl-arch
+{
+    {   P = "$(CAM):",	R = "TIFF$(N):"	}
+}
+
+file NDFile.tpl-arch
+{
+    {   P = "$(CAM):",	R = "TIFF$(N):"	}
+}
+
+file NDFileTIFF.tpl-arch
+{
+    {   P = "$(CAM):",	R = "TIFF$(N):"	}
+}
+

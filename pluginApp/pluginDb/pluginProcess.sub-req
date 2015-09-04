@@ -1,0 +1,14 @@
+#
+# gigECam pluginProcess Autosave file
+#
+
+file NDPluginBase_settings.req
+{
+    {   P = "$(CAM):",	R = "Proc$(N):"	}
+}
+
+file NDProcess_settings.req
+{
+    {   P = "$(CAM):",	R = "Proc$(N):"	}
+}
+

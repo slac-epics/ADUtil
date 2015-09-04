@@ -1,0 +1,19 @@
+#
+# gigECam pluginNexus Archive file
+#
+
+file NDPluginBase.tpl-arch
+{
+    {   P = "$(CAM):",	R = "Nexus$(N):"	}
+}
+
+file NDFile.tpl-arch
+{
+    {   P = "$(CAM):",	R = "Nexus$(N):"	}
+}
+
+file NDFileNexus.tpl-arch
+{
+    {   P = "$(CAM):",	R = "Nexus$(N):"	}
+}
+

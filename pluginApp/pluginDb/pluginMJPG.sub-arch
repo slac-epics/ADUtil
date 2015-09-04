@@ -1,0 +1,14 @@
+#
+# gigECam pluginMJPG Archive file
+#
+
+file NDPluginBase.tpl-arch
+{
+    {   P = "$(CAM):",	R = "MJPG$(N):"	}
+}
+
+file ffmpegStream.tpl-arch
+{
+    {   P = "$(CAM):",	R = "MJPG$(N):"	}
+}
+

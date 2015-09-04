@@ -1,0 +1,19 @@
+#
+# gigECam pluginMagick Autosave file
+#
+
+file NDPluginBase_settings.req
+{
+    {   P = "$(CAM):",	R = "Magick$(N):"	}
+}
+
+file NDFile_settings.req
+{
+    {   P = "$(CAM):",	R = "Magick$(N):"	}
+}
+
+file NDFileMagick_settings.req
+{
+    {   P = "$(CAM):",	R = "Magick$(N):"	}
+}
+
