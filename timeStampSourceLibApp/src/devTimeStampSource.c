@@ -39,6 +39,8 @@
 #define TSSTR_ELAPSED               "ElapsedTime"
 #define TSSTR_ELAPSED_MIN           "ElapsedTimeMin"
 #define TSSTR_ELAPSED_MAX           "ElapsedTimeMax"
+#define TSSTR_IMAGE_FIDUCIALS       "ImageFiducials"
+#define TSSTR_RESYNC_COUNT          "ResyncCount"
 
 typedef enum {
    TSIDX_undefined,
@@ -54,7 +56,9 @@ typedef enum {
    TSIDX_buffer_count,
    TSIDX_elapsed,
    TSIDX_elapsed_min,
-   TSIDX_elapsed_max
+   TSIDX_elapsed_max,
+   TSIDX_image_fiducials,
+   TSIDX_resync_count
 } timestampsource_idx;
 
 typedef struct {
@@ -157,6 +161,7 @@ static long devLiTimeStampSource_init_record(longinRecord *precord)
              else if(!strcmp(TSSTR_ELAPSED, option_string[1])) idx = TSIDX_elapsed;
              else if(!strcmp(TSSTR_ELAPSED_MIN, option_string[1])) idx = TSIDX_elapsed_min;
              else if(!strcmp(TSSTR_ELAPSED_MAX, option_string[1])) idx = TSIDX_elapsed_max;
+             else if(!strcmp(TSSTR_RESYNC_COUNT, option_string[1])) idx = TSIDX_resync_count;
              else {
                  errlogPrintf("Rec(%s) cannot find parameter in the timesource registry (%s, %s)\n"
                               "or, does not support the parameter.\n",
@@ -219,6 +224,8 @@ extern int tssLostImages;
 extern int tssLostPulseId;
 extern int tssInvalidPulseIdCount;
 extern epicsMutexId tssMutex;
+extern int tssImageFiducials;
+extern int tssResyncCount;
 
 static long devLiTimeStampSource_read_longin(longinRecord *precord)
 {
@@ -289,6 +296,11 @@ static long devLiTimeStampSource_read_longin(longinRecord *precord)
 	    precord->val = tssElapsedMax;
     	    epicsMutexUnlock(tssMutex);
             break;
+       case TSIDX_resync_count:
+    	    epicsMutexLock(tssMutex);
+	    precord->val = tssResyncCount;
+    	    epicsMutexUnlock(tssMutex);
+            break;
 
         default:
             goto errl;
@@ -323,6 +335,7 @@ static long devLoTimeStampSource_init_record(longoutRecord *precord)
                 goto errl;
             }
             if(!strcmp(TSSTR_EVENT_CODE, option_string[1])) idx = TSIDX_event_code;
+	    else if(!strcmp(TSSTR_IMAGE_FIDUCIALS, option_string[1])) idx = TSIDX_image_fiducials;
             else {
                 errlogPrintf("Rec(%s) cannot find parameter in the timesource registry (%s, %s)\n"
                              "or, does not support the paramter.\n",
@@ -370,14 +383,20 @@ static long devLoTimeStampSource_write_longout(longoutRecord *precord)
 
 
     switch(idx) {
-       case TSIDX_event_code:
-           setEventCode_timeStampSource(pTss, precord->val);
-           break;
-
-        default:
-            goto errl;
-            break;
-
+    case TSIDX_event_code:
+      setEventCode_timeStampSource(pTss, precord->val);
+      break;
+      
+    case TSIDX_image_fiducials:
+      epicsMutexLock(tssMutex);
+      tssImageFiducials = precord->val;
+      epicsMutexUnlock(tssMutex);
+      break;
+      
+    default:
+      goto errl;
+      break;
+      
     }
 
     

@@ -8,6 +8,10 @@
 #include "evrPattern.h"
 #include "evrTime.h"
 
+#include <recSup.h>
+#include <dbAccess.h>
+#include <dbAccessDefs.h>
+#include <ereventRecord.h>
 
 #include "registerTimeStampSource.h"
 
@@ -47,16 +51,13 @@ epicsRegisterFunction(TimeStampSource);
 /**
  * The following variables are used for the pipelined TSS
  */
-perfParm_ts *tssAcquisitionPerf;
-perfParm_ts *tssStartPerf;
-int tssAcquisitionPerfStarted = 0;
 epicsMutexId tssMutex;
 
 int tssTimeStampSource = 0;
 int tssSourceEvent = 0;
 int initialized = 0;
 
-#define TSS_BUFFER_SIZE 5
+#define TSS_BUFFER_SIZE 25
 #define CIRCULAR_INCREMENT(X) (X + 1) % TSS_BUFFER_SIZE
 #define CIRCULAR_DECREMENT(X) (TSS_BUFFER_SIZE + X - 1) % TSS_BUFFER_SIZE
 
@@ -66,6 +67,7 @@ typedef struct {
 } TssNode;
 
 TssNode tssBuffer[TSS_BUFFER_SIZE];
+int tssResyncCount = 0;
 int tssBufferHead = 0;
 int tssBufferTail = 0;
 int tssBufferAcquisitionState = 0;
@@ -73,13 +75,53 @@ int tssLostImages = 0;
 int tssLostPulseId = 131040;
 int tssInvalidPulseIdCount = 0;
 int tssBufferFull = 0;
-int tssBufferCount = 0;
+int tssBufferCount = 0; // Number of image acquisitions started, but not yet tagged
+int tssLastPulseId = -1;
+int tssTriggerReenablePlease = 0;
+int tssImageFiducials = 3; // Expected PulseID difference between images, e.g.
+                           //  120 Hz acquisition means difference by 3
+                           //   60 Hz acquisition means difference by 6
 
 /** Elapsed time in usec (perfMeasure keeps these as doubles) */
 int tssElapsed = 0;
 int tssElapsedMax = 0;
 int tssElapsedMin = 100000;
+struct dbAddr tssTriggerAddr;
+perfParm_ts *tssRestartPerf = NULL;
 
+perfParm_ts *fromTrig2Acq = NULL;
+perfParm_ts *eventPerf = NULL;
+int eventPerfFirst = 1;
+
+typedef struct TimeStampNode TimeStampNode;
+
+struct TimeStampNode {
+  int index;
+  int evrIndex;
+  TimeStampNode *next;
+  epicsTimeStamp *timeStamp;
+  epicsTimeStamp evrTimeStamp;
+};
+extern TimeStampNode *pTSSList;
+TimeStampNode *pNext = NULL;
+
+/**
+ * The .ENAB field is 1 when the trigger is "Enabled", and 0 when
+ * it is set to "Disable".
+ */
+static void tssSetTrigger(epicsEnum16 enab) {
+  ereventRecord *precord = (ereventRecord *) tssTriggerAddr.precord;
+
+  dbScanLock(tssTriggerAddr.precord);
+  precord->enab = enab;
+  precord->proc = 1;
+  dbProcess(tssTriggerAddr.precord);
+  dbScanUnlock(tssTriggerAddr.precord);
+}
+
+/**
+ * This resets the perfMeasure counters only
+ */
 static long tssImageAcquisitionReset(subRecord *prec) {
   epicsMutexLock(tssMutex);
 
@@ -91,12 +133,26 @@ static long tssImageAcquisitionReset(subRecord *prec) {
   tssElapsedMin = 1000000;
 
   epicsMutexUnlock(tssMutex);
+
+  return 0;
 }
 
+/**
+ * This function gets called whenever the PV $(DEV):Acquire changes
+ */
 static long tssImageAcquisition(subRecord *prec) {
   int acquisitionState = prec->a;
 
   epicsMutexLock(tssMutex);
+
+  printf("TSS: tssImageAcquisition(%d, %d)\n", tssBufferAcquisitionState, acquisitionState);
+
+  // Don't reset acquisition if system is already acquiring data
+  // The $(DEV):Acquire PV must be off when the system starts
+  if (acquisitionState > 0 && tssBufferAcquisitionState > 0) {
+    epicsMutexUnlock(tssMutex);
+    return 0;
+  }
 
   tssBufferHead = 0;
   tssBufferTail = 0;
@@ -104,6 +160,9 @@ static long tssImageAcquisition(subRecord *prec) {
 
   /** If tssBufferAcquisitionState is 1, then PULSEIDs are recorded */
   tssBufferAcquisitionState = acquisitionState; 
+
+  /** Enable/Disable EVR based on the state of $(DEV):Acquisition PV */
+  tssSetTrigger(acquisitionState);
 
   epicsMutexUnlock(tssMutex);
 
@@ -118,10 +177,10 @@ static long tssImageAcquisition(subRecord *prec) {
  * PipelinedTimeStampSource() function is called by AD when the image is
  * ready to be timestamped.
  */
+struct dbr_enumStrs p;
+
 static long tssStartInit(subRecord *prec) {
   tssMutex = epicsMutexMustCreate();
-  tssAcquisitionPerf = makePerfMeasure("ImageAcquisition", "Time between trigger and image tagging");
-  tssStartPerf = makePerfMeasure("TriggerPeriod", "Delay between trigger events");
 
   char perfMeasureName[30];  
   int i = 0;
@@ -132,6 +191,18 @@ static long tssStartInit(subRecord *prec) {
   tssBufferTail = 0;
   tssBufferHead = 0;
   tssBufferCount = 0;
+  tssRestartPerf = makePerfMeasure("Resync", "Time elapsed after trigger disable");
+
+  fromTrig2Acq = makePerfMeasure("Trig2Acq", "");
+  eventPerf = makePerfMeasure("EventIrq", "Time between EVR record callback");
+  eventPerfFirst = 1;
+
+  if (dbNameToAddr("EVR:DMP1:PM10:EVENT1CTRL.ENAB", &tssTriggerAddr) != 0) {
+    printf("ERROR: Failed to find EVR trigger ENABLE record\n");
+  }
+  else {
+    printf("INFO: Found EVR record\n");
+  }
 
   return 0;
 }
@@ -143,27 +214,71 @@ static long tssStartInit(subRecord *prec) {
  */
 int getPulseId(int sourceEvent) {
   epicsTimeStamp timeStamp;
-  epicsFloat64 elapsedTime = 0;
+  int status = evrTimeGet(&timeStamp, sourceEvent);
 
-  evrTimeGet(&timeStamp, sourceEvent);
-  evrTimeGetFromPipeline(&timeStamp, evrTimeCurrent, 0, 0,0,0,0);
+  if (tssBufferAcquisitionState == 1) {
+    if (pNext == NULL) {
+      pNext=pTSSList;
+    }
+    
+    pNext->timeStamp->secPastEpoch=timeStamp.secPastEpoch;
+    pNext->timeStamp->nsec=timeStamp.nsec;
+    pNext->evrTimeStamp = timeStamp;
+
+    /*
+    printf("[%d] sec=%d nsec=%d ptr=0x%xTSS\n",
+	   pNext->index,
+	   pNext->timeStamp->secPastEpoch,
+	   pNext->timeStamp->nsec,
+	   pNext->timeStamp);
+    */
+    
+    pNext = pNext->next;
+  }
+
+  if (status != 0) {
+    printf("ERROR: evrTimeGet() returned non-zero value\n");
+    timeStamp.nsec = 0x1FFFF;
+
+    /** Disable EVR and let FIFO flush */
+    tssSetTrigger(0);
+    tssTriggerReenablePlease = 1;
+    tssResyncCount++;
+
+    int count = tssBufferCount;
+    tssBufferHead = 0;
+    tssBufferTail = 0;
+    tssBufferCount = 0;
+    
+
+    /*    printf("STOP: evrTimeGet returned non-zero (%d)\n", count);*/
+  }
 
   /**
    * Save timestamp to the head of the buffer and start perfMeasure, only
    * if the camera is enabled (i.e. Acquisition PV is 1)
    */
   if (tssBufferAcquisitionState == 1) {
-    /**
-     * If an invalid PULSEID was received, then skip the buffer
-     */
     if ((timeStamp.nsec & 0x1FFFF) == 0x1FFFF) {
       tssInvalidPulseIdCount++;
+
+      /** Disable EVR and let FIFO flush */
+      tssSetTrigger(0);
+      tssTriggerReenablePlease = 1;
+      tssResyncCount++;
+
+      tssBufferHead = 0;
+      tssBufferTail = 0;
+      tssBufferCount = 0;
+      
+	
+      return 1;
     }
     else {
-      /** Add new element if there is space */
       if (tssBufferCount < TSS_BUFFER_SIZE) {
 	tssBuffer[tssBufferHead].tssTimeStamp = timeStamp;
 	startPerfMeasure(tssBuffer[tssBufferHead].tssAcquisitionPerf);
+	startPerfMeasure(fromTrig2Acq);
 	tssBufferHead = CIRCULAR_INCREMENT(tssBufferHead);
 	tssBufferCount++;
 	if (tssBufferCount == TSS_BUFFER_SIZE) {
@@ -171,7 +286,20 @@ int getPulseId(int sourceEvent) {
 	}
       }
       else {
-	printf("buffer full, overflowing! (loosing PulseId %d)\n", timeStamp.nsec & 0x1FFFF);
+	tssLostImages++;
+
+	/** Disable EVR and let FIFO flush */
+	tssSetTrigger(0);
+	tssTriggerReenablePlease = 1;
+	tssResyncCount++;
+	
+	int count = tssBufferCount;
+	tssBufferHead = 0;
+	tssBufferTail = 0;
+	tssBufferCount = 0;
+   
+
+	return 1;
       }
     }
   }
@@ -186,14 +314,41 @@ static long tssStart(subRecord *prec) {
   int sourceEvent = prec->a;
   tssSourceEvent = sourceEvent;
 
+  if (eventPerfFirst == 1) {
+    startPerfMeasure(eventPerf);
+    eventPerfFirst = 0;
+  }
+  else {
+    endPerfMeasure(eventPerf);
+    calcPerfMeasure(eventPerf);
+    startPerfMeasure(eventPerf);
+  }
+
   epicsMutexLock(tssMutex);
 
   prec->val = getPulseId(sourceEvent);
 
-  if (tssAcquisitionPerfStarted == 0) {
-    startPerfMeasure(tssAcquisitionPerf);
-    tssAcquisitionPerfStarted = 1;
+  epicsMutexUnlock(tssMutex);
+
+  return 0;  
+}
+
+/**
+ * This function is called on every event 141 (60 Hz)
+ */
+static long tssRestart(subRecord *prec) {
+  /* Does not do anything if reenable not set */
+  if (tssTriggerReenablePlease == 0) {
+    return 0;
   }
+
+  epicsMutexLock(tssMutex);
+
+  tssSetTrigger(1);
+  resetPerfMeasure(eventPerf);
+  eventPerfFirst = 1;
+
+  tssTriggerReenablePlease = 0;
 
   epicsMutexUnlock(tssMutex);
 
@@ -215,7 +370,7 @@ static void tssCheckPulseId(adTimeStampSource_p pTss, int imagePulseId) {
   int pulseIdWrap = 131040;
 
   /**
-   * The current pulseId is sitting in the head of the circular buffer,
+   * The current pulseId is sitting in the head of the circular buffer (minus one),
    * there is no need to get it again from the EVR.
    */
   currentPulseId = tssBuffer[CIRCULAR_DECREMENT(tssBufferHead)].tssTimeStamp.nsec & 0x1FFFF;
@@ -223,15 +378,18 @@ static void tssCheckPulseId(adTimeStampSource_p pTss, int imagePulseId) {
   int difference = ((currentPulseId + pulseIdWrap) - imagePulseId) % pulseIdWrap;
 
   int lostImages = 0;
-  if (difference > 3) {
-    /** If difference is 6, then one image is lost */
-    lostImages = (difference-1) / 3;
+  if (difference > tssImageFiducials) {
+    /**
+     * If difference is greater than tssImageFiducials,
+     * then at least one image is lost
+     */
+    lostImages = (difference-1) / tssImageFiducials;
 
     /** Report lost images one by one */
     int i = 0;
     for (; i < lostImages; ++i) {
-      tssLostPulseId = (imagePulseId + 3 + i*3) % pulseIdWrap; 
-      /*      printf("%d %d\n", lostImages, tssLostPulseId);*/
+      tssLostPulseId = (imagePulseId + tssImageFiducials + i*tssImageFiducials) % pulseIdWrap; 
+      //      printf("%d %d\n", lostImages, tssLostPulseId);
       tssLostImages++;
     }
     scanIoRequest(pTss->slowIoScanPvt);
@@ -239,43 +397,58 @@ static void tssCheckPulseId(adTimeStampSource_p pTss, int imagePulseId) {
 }
 
 /**
- * Each slot in the tssBuffer keeps the pulseID at 120 Hz. The time separation
- * between each slot is 8.333 ms. If this function takes too long to get
- * called then the images/pulseids will start getting out of sync. The best 
- * approximation of to get thinks back in sync is discard the pulseids following 
- * the one just used up. E.g. if perfMeasure says it took 30ms between the 
- * pulseid and the tagging, then remove 30/8.333=3.6 -> three pulseIDs, i.e.
- * increase the tail by that much (reseting perfMeasures that won't be used). It
- * may be useful to check the latest readout times to define if there should
- * be one or two pulseIds left in the buffer.
+ * Each slot in the tssBuffer keeps the pulseID at the acquisition rate (e.g. 120 Hz).
+ * The time separation between each slot is 2.777ms multiplied by the tssImageFiducials.
+ * If this function takes too long to get called then the images/pulseids will start
+ * getting out of sync. All pulseIds and images received until this point are discarded
+ * and the EVR is restarted.
+ *
+ * @return 0 if times are fine, 1 if there have been delays and fifo was flushed
  */
-static void tssSync() {
+static int tssSync() {
+  /** Don't sync if camera is not being triggered */
+  ereventRecord *precord = (ereventRecord *) tssTriggerAddr.precord;
+  dbScanLock(tssTriggerAddr.precord);
+  int enabled = precord->enab;
+  dbProcess(tssTriggerAddr.precord);
+  dbScanUnlock(tssTriggerAddr.precord);
+  if (enabled < 1) {
+    return 0;
+  }
+
   /** This is the time in useconds between PulseIds */
-  double fiducial = 8333.3333;
+  double fiducial360Hz = 2777.7777;
 
   /**
    * This is the maximum time delay accepted before we know there are missing
-   * images.
+   * images -> 16ms.
    */
-  double tolerance = fiducial * 2;
+  double tolerance = (fiducial360Hz * 3) * 2;
 
+  /**
+   * If last elapsed time is more than the tolerance just cleanup past PulseIds
+   * from FIFO and start fresh.
+   */
   if (tssBuffer[tssBufferTail].tssAcquisitionPerf->elapsed_time > tolerance) {
-    /*
-    printf("Long elapsed time detected: %f (%d)",
-	   tssBuffer[tssBufferTail].tssAcquisitionPerf->elapsed_time,
-	   tssBuffer[tssBufferTail].tssTimeStamp.nsec & 0x1FFFF);
-    */
-    double takeAway = tssBuffer[tssBufferTail].tssAcquisitionPerf->elapsed_time - tolerance;
-
-    do {
-      tssBufferTail = CIRCULAR_INCREMENT(tssBufferTail);
-      endPerfMeasure(tssBuffer[tssBufferTail].tssAcquisitionPerf);
-      takeAway -= fiducial;
-      tssBufferCount--;
-      printf(".");
-    } while (takeAway > fiducial);
-    printf("\n");
+    /*tssImageAcquisitionReset(NULL);*/
+    
+    int resetTS = tssBuffer[tssBufferTail].tssTimeStamp.nsec & 0x1FFFF;
+    int count = tssBufferCount;
+    
+    tssBufferHead = 0;
+    tssBufferTail = 0;
+    tssBufferCount = 0;
+    
+    tssSetTrigger(0);
+    tssTriggerReenablePlease = 1;
+    /*      tssSetTrigger(1);*/
+    
+    //    printf("STOP: tssReset %d (count=%d)\n", resetTS, count);
+    
+    return 1;
   }
+
+  return 0;
 }
 
 /** 
@@ -284,41 +457,91 @@ static void tssSync() {
  */
 static void PipelinedTimeStampSource(void *userPvt, epicsTimeStamp *pTimeStamp)
 {
-   adTimeStampSource_p pTss = userPvt;
-   if(!pTss) return;
-   TimeStampSourceProcess(pTss, pTimeStamp);
+  // Disable timestamp setting... (pTSS)
+  /*
+  epicsTimeStamp ts;
+  epicsTimeStamp *pTimeStamp = &ts;
+  */
+  // End disable (pTSS)
 
-   epicsMutexLock(tssMutex);
- 
-   if (tssBufferCount > 0) {
-     pTimeStamp->secPastEpoch = tssBuffer[tssBufferTail].tssTimeStamp.secPastEpoch;
-     pTimeStamp->nsec = tssBuffer[tssBufferTail].tssTimeStamp.nsec;
-     endPerfMeasure(tssBuffer[tssBufferTail].tssAcquisitionPerf);
-     calcPerfMeasure(tssBuffer[tssBufferTail].tssAcquisitionPerf);
+  adTimeStampSource_p pTss = userPvt;
+  if(!pTss) return;
+  TimeStampSourceProcess(pTss, pTimeStamp);
+  epicsMutexLock(tssMutex);
+  
+  /*   tssSetTrigger(0); // Take a single image! */
 
-     tssElapsed = tssBuffer[tssBufferTail].tssAcquisitionPerf->elapsed_time;
-     if (tssBuffer[tssBufferTail].tssAcquisitionPerf->elapsed_time_min < tssElapsedMin) {
-       tssElapsedMin = tssBuffer[tssBufferTail].tssAcquisitionPerf->elapsed_time_min;
-     } 
-     if (tssBuffer[tssBufferTail].tssAcquisitionPerf->elapsed_time_max > tssElapsedMax) {
-       tssElapsedMax = tssBuffer[tssBufferTail].tssAcquisitionPerf->elapsed_time_max;
-     } 
-     
-     tssCheckPulseId(pTss, pTimeStamp->nsec & 0x1FFFF);
-     tssSync();
-     
-     tssBufferTail = CIRCULAR_INCREMENT(tssBufferTail);
-     tssBufferFull = 0;
-     tssBufferCount--;
-   }
-   
-   epicsMutexUnlock(tssMutex);
-   
-   scanIoRequest(pTss->ioScanPvt);
+  /**
+   * There must be some element in the tss buffer, if so the tssBufferTail should 
+   * be pointing to the element that contains the image pulseId and the perfMeasure
+   */
+  if (tssBufferCount > 0) {
+    pTimeStamp->secPastEpoch = tssBuffer[tssBufferTail].tssTimeStamp.secPastEpoch;
+    pTimeStamp->nsec = tssBuffer[tssBufferTail].tssTimeStamp.nsec;
+
+    /**
+     * Make sure the same PulseId is not used again to tag another image.
+     * If that is the case use the invalid PulseId. Stop EVR, clear tssBuffer
+     * and restart acquisition.
+     */
+    if (tssLastPulseId == (pTimeStamp->nsec & 0x1FFFF)) {
+      pTimeStamp->nsec |= 0x1FFFF;
+
+      tssSetTrigger(0);
+      tssTriggerReenablePlease = 1;
+      tssResyncCount++;
+
+      tssBufferHead = 0;
+      tssBufferTail = 0;
+      tssBufferCount = 0;
+      
+
+      //      printf("STOP: duplicate %d (h=%d,t=%d,c=%d)\n", tssLastPulseId,
+      //	     tssBufferHead, tssBufferTail, tssBufferCount);
+    }
+    tssLastPulseId = pTimeStamp->nsec & 0x1FFFF;
+
+    endPerfMeasure(tssBuffer[tssBufferTail].tssAcquisitionPerf);
+    calcPerfMeasure(tssBuffer[tssBufferTail].tssAcquisitionPerf);
+
+    /**
+     * Calculate the elapsed time between the EVR record callback (trigger)
+     * and image timestamp callback.
+     */
+    tssElapsed = tssBuffer[tssBufferTail].tssAcquisitionPerf->elapsed_time;
+    if (tssBuffer[tssBufferTail].tssAcquisitionPerf->elapsed_time_min < tssElapsedMin) {
+      tssElapsedMin = tssBuffer[tssBufferTail].tssAcquisitionPerf->elapsed_time_min;
+    } 
+    if (tssBuffer[tssBufferTail].tssAcquisitionPerf->elapsed_time_max > tssElapsedMax) {
+      tssElapsedMax = tssBuffer[tssBufferTail].tssAcquisitionPerf->elapsed_time_max;
+    } 
+    
+    tssCheckPulseId(pTss, pTimeStamp->nsec & 0x1FFFF);
+
+    if (tssSync() == 0) {
+      tssBufferTail = CIRCULAR_INCREMENT(tssBufferTail);
+      tssBufferFull = 0;
+      tssBufferCount--;
+    }
+    else {
+      /** If acquisition took long time, consider image bad */
+      pTimeStamp->nsec |= 0x1FFFF;
+    }
+    
+  }
+  else {
+    /*     printf("ERROR: empty buffer! last id %d\n", tssLastPulseId);*/
+    pTimeStamp->nsec = tssBuffer[tssBufferTail].tssTimeStamp.nsec | 0x1FFFF;
+  }
+
+  epicsMutexUnlock(tssMutex);
+  
+  scanIoRequest(pTss->ioScanPvt);
 }
 
 epicsRegisterFunction(tssImageAcquisitionReset);
 epicsRegisterFunction(tssImageAcquisition);
 epicsRegisterFunction(tssStartInit);
 epicsRegisterFunction(tssStart);
+epicsRegisterFunction(tssRestart);
 epicsRegisterFunction(PipelinedTimeStampSource);

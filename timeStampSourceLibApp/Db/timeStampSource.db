@@ -107,6 +107,7 @@ record(sub, "$(DEV):TSS_IMAGE_ACQUISITION")
     field(SCAN, "Passive")
     field(SNAM, "tssImageAcquisition")
     field(INPA, "$(DEV):Acquire.VAL")
+#    field(INPA, "$(DEV):Acquisition.VAL")
 }
 
 record(sub, "$(DEV):TSS_IMAGE_ACQUSITION_RESET")
@@ -122,12 +123,31 @@ record(sub, "$(DEV):TSS_START")
     field(INAM, "tssStartInit")
     field(SNAM, "tssStart")
     field(SCAN, "Event")
-    field(EVNT, "140") # 120Hz
-#    field(PRI,  "HIGH")
+    field(EVNT, "140") # 120 Hz
+    field(PRIO,  "HIGH")
     field(INPA, "$(DEV):TSS_START.EVNT")
     field(PREC, "1")
     field(TSE, "-1")
 #    field(DISV, "0")
+}
+
+record(sub, "$(DEV):TSS_RESTART")
+{
+    field(DESC, "Re-enables event 140 to re-sync camera")
+    field(INAM, "")
+    field(SNAM, "tssRestart")
+    field(SCAN, "Event")
+    field(EVNT, "141") # 60 Hz
+    field(PREC, "1")
+    field(TSE, "-1")
+}
+
+record(longout, "$(DEV):TSS_IMAGE_FIDUCIAL")
+{
+    field(DESC, "Number of fiducials between images")
+    field(DTYP, "TimeStampSource")
+    field(OUT,  "@$(PORT) ImageFiducials")
+    field(VAL,  "3")
 }
 
 record(longin, "$(DEV):TSS_INVALID_PULSEID_COUNT")
@@ -211,6 +231,17 @@ record(longin, "$(DEV):TSS_BUFFER_COUNT")
     field(MDEL, "-1")
     field(HHSV, "MAJOR")
     field(HIHI, "2")
+}
+
+record(longin, "$(DEV):TSS_RESYNC_COUNT")
+{
+    field(DESC, "Count FIFO resyncs")
+    field(DTYP, "TimeStampSource")
+    field(INP,  "@$(PORT) ResyncCount")
+    field(SCAN, "I/O Intr")
+    field(PRIO, "LOW")
+    field(TSE, "-2")
+    field(MDEL, "-1")
 }
 
 record(longin, "$(DEV):TSS_PULSEID_LOST")
