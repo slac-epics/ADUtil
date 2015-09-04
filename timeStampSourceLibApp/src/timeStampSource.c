@@ -102,8 +102,8 @@ struct TimeStampNode {
   epicsTimeStamp *timeStamp;
   epicsTimeStamp evrTimeStamp;
 };
-extern TimeStampNode *pTSSList;
-TimeStampNode *pNext = NULL;
+//extern TimeStampNode *pTSSList;
+//TimeStampNode *pNext = NULL;
 
 /**
  * The .ENAB field is 1 when the trigger is "Enabled", and 0 when
@@ -215,7 +215,7 @@ static long tssStartInit(subRecord *prec) {
 int getPulseId(int sourceEvent) {
   epicsTimeStamp timeStamp;
   int status = evrTimeGet(&timeStamp, sourceEvent);
-
+  /*
   if (tssBufferAcquisitionState == 1) {
     if (pNext == NULL) {
       pNext=pTSSList;
@@ -224,18 +224,10 @@ int getPulseId(int sourceEvent) {
     pNext->timeStamp->secPastEpoch=timeStamp.secPastEpoch;
     pNext->timeStamp->nsec=timeStamp.nsec;
     pNext->evrTimeStamp = timeStamp;
-
-    /*
-    printf("[%d] sec=%d nsec=%d ptr=0x%xTSS\n",
-	   pNext->index,
-	   pNext->timeStamp->secPastEpoch,
-	   pNext->timeStamp->nsec,
-	   pNext->timeStamp);
-    */
     
     pNext = pNext->next;
   }
-
+  */
   if (status != 0) {
     printf("ERROR: evrTimeGet() returned non-zero value\n");
     timeStamp.nsec = 0x1FFFF;

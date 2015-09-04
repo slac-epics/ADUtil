@@ -1,5 +1,7 @@
 ADSupport-R1-5-0: Imported plugin commands and databases from ADStream (PDCS). These
                   commands are used by AD based IOCs to configure the plugins.
+		  Fifo timestamp should not be used in this version
+		  ADCore version set to ADCore-R2-1_1-0
 
 ADSupport-R1-4-1: Remove debugging message from Gaussian Fitting in NDStats2 plugin
 

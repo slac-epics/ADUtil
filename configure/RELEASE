@@ -49,7 +49,8 @@ BASE_MODULE_VERSION=$(EPICS_BASE_VER)
 # IOC apps or other Support apps
 # =============================================================
 ASYN_MODULE_VERSION=asyn-R4-25_1-0
-ADCORE_MODULE_VERSION=ADCore-master-Mar8-2015
+#ADCORE_MODULE_VERSION=ADCore-master-Mar8-2015
+ADCORE_MODULE_VERSION=ADCore-R2-1_1-0
 EVENT_MODULE_VERSION=event-R4-1-5
 MISCUTILS_MODULE_VERSION=miscUtils-R2-2-2
 PERF_MEASURE_VERSION=perfMeasure-R1-1-0
