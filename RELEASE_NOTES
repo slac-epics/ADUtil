@@ -1,3 +1,6 @@
+R1.8.0:           Marcio Donadio, 02/16/2017
+                  Modified README just to advice the name changing from ADSupport to ADUtil
+
 R1.7.0:           Marcio Donadio, 02/15/2017
                   Updated to new git workflow base build support
 
