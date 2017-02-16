@@ -1,3 +1,6 @@
+R1.7.0:           Marcio Donadio, 02/15/2017
+                  Updated to new git workflow base build support
+
 R1.6.0:           Marcio Donadio, 02/15/2017
                   Creating new release R1.6.0 to avoid confusion w/ prior pcds R1-5* releases
 
