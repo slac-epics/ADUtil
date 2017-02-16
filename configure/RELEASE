@@ -1,79 +1,17 @@
-# RELEASE - Location of external support modules
-#
-# IF YOU MAKE ANY CHANGES to this file you must subsequently
-# do a "gnumake rebuild" in this application's top level
-# directory.
-#
-# The build process does not check dependencies against files
-# that are outside this application, thus you should do a
-# "gnumake rebuild" in the top level directory after EPICS_BASE
-# or any other external module pointed to below is rebuilt.
-#
-# Host- or target-specific settings can be given in files named
-#  RELEASE.$(EPICS_HOST_ARCH).Common
-#  RELEASE.Common.$(T_A)
-#  RELEASE.$(EPICS_HOST_ARCH).$(T_A)
-#
-# This file should ONLY define paths to other support modules,
-# or include statements that pull in similar RELEASE files.
-# Build settings that are NOT module paths should appear in a
-# CONFIG_SITE file.
+# RELEASE
+# Defines location of external products
+# Run "gnumake clean uninstall install" in the application
+# top directory each time this file is changed.
+-include $(TOP)/configure/RELEASE.local
 
-# If you don't want to install into $(TOP) then
-# define INSTALL_LOCATION_APP here
-#INSTALL_LOCATION_APP=<fullpathname>
+# Check for valid macro definitions for module release directories
+# You can add tests here to make sure RELEASE.local defined valid
+# macros for all the module dependencies
+#ifeq ($(wildcard $(EPICS_BASE)/include),)
+#$(error Invalid EPICS_BASE: $(EPICS_BASE))
+#endif
+#ifeq ($(wildcard $(ASYN)/include),)
+#$(error Invalid ASYN: $(ASYN))
+#endif
+#...
 
-# EPICS Templates
-#TEMPLATE_TOP=/afs/slac/g/lcls/epics/R3-14-12-4_1-0/modules/icdTemplates/icdTemplates-R1-2-0
-
-# =============================================================
-# All needed variables come in via the following include:
-# =============================================================
-
-include $(TOP)/RELEASE_SITE
-
-# =============================================================
-# Define location of the modules tree
-# =============================================================
-
-EPICS_MODULES=$(MODULES_SITE_TOP)
-
-# ==============================================================
-# Define the cvs module version of EPICS BASE that you will use
-# =============================================================
-
-BASE_MODULE_VERSION=$(EPICS_BASE_VER)
-
-# =============================================================
-# Define the version of modules needed by
-# IOC apps or other Support apps
-# =============================================================
-ASYN_MODULE_VERSION=asyn-R4-25_1-0
-#ADCORE_MODULE_VERSION=ADCore-master-Mar8-2015
-ADCORE_MODULE_VERSION=ADCore-R2-1_1-0
-EVENT_MODULE_VERSION=event-R4-2-0
-MISCUTILS_MODULE_VERSION=miscUtils-R2-2-2
-PERF_MEASURE_VERSION=perfMeasure-R1-1-0
-
-
-# ============================================================
-#  Module Location
-# ============================================================
-ASYN=$(EPICS_MODULES)/asyn/$(ASYN_MODULE_VERSION)
-ADCORE=$(EPICS_MODULES)/ADCore/$(ADCORE_MODULE_VERSION)
-EVENT=$(EPICS_MODULES)/event/$(EVENT_MODULE_VERSION)
-MISCUTILS=$(EPICS_MODULES)/miscUtils/$(MISCUTILS_MODULE_VERSION)
-PERF_MEASURE=$(EPICS_MODULES)/perfMeasure/$(PERF_MEASURE_VERSION)
-
-
-# EPICS_BASE usually appears last so other apps can override stuff:
-##EPICS_BASE=/afs/slac/g/lcls/epics/R3-14-12-4_1-0/base/base-R3-14-12-4_1-0
-
-EPICS_BASE=$(BASE_SITE_TOP)/$(BASE_MODULE_VERSION)
-
-# Location of Linux Kernel Modules:
-LINUX_KERNEL_MODULES=$(PACKAGE_SITE_TOP)/linuxKernel_Modules
-
-# Set RULES here if you want to take build rules from somewhere
-# other than EPICS_BASE:
-#RULES=/path/to/epics/support/module/rules/x-y

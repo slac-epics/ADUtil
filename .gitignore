@@ -3,8 +3,10 @@ O.*
 *.log
 *.swp
 bin/
+cfg/
 db/
 dbd/
+display/
 html/
 include/
 lib/
