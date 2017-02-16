@@ -2,6 +2,8 @@
 TIMESTAMPSOURCE LIBRARY FOR EPICS AREA DETECTOR
 --------------------------------------------------
 
+Rem: As ADSupport is a library available in EPICS community and is not related to this, ADSupport was renamed to ADUtil in 02/16/2017.
+
 How to use the user-defined timestamp source for the camera driver
 
 This module provides a library for the user-defined timestamp 
@@ -26,7 +28,7 @@ Instructions to use the library
 - Please, put the followings lines into "RELEASE/configure" file
 
 ADSUPPORT_MODULE_VERSION=<version>
-ADSUPPORT=$(EPICS_MODULES)/ADSupport/$(ADSUPPORT_MODULE_VERSION)
+ADSUPPORT=$(EPICS_MODULES)/ADUtil/$(ADSUPPORT_MODULE_VERSION)
 
 - Please, add the followings lines into "<application>/src/Makefile"
 
@@ -95,7 +97,7 @@ $(DEV):TSS_ERTICKS	$(DEV):TSS_ERTICKS_HST		EVR clock tick counter (119MHz clock)
 TIMESTAMPSOURCE - FIFO PulseId
 -----------------------------------------------------
 
-The ADSupport TSS library provides FIFO pulseID support that allows images to be properly
+The ADUtil TSS library provides FIFO pulseID support that allows images to be properly
 tagged even if the transmission and the image processing time takes longer than the time
 between pulse IDs (8.333 ms).
 
