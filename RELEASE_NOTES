@@ -1,3 +1,10 @@
+R1.9.0:           Hugo Slepicka, 04/24/2017
+                  Bumped versions:
+                  - asyn: R4.31-0.1.0
+                  - ADCore: R2.6-1.0.0
+                  - event: R4.2.8
+                  - perfMeasure: R1.4.0
+
 R1.8.0:           Marcio Donadio, 02/16/2017
                   Modified README just to advice the name changing from ADSupport to ADUtil
 
