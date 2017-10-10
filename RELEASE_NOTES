@@ -1,3 +1,8 @@
+R2.0.0:           Hugo Slepicka, 10/10/2017
+		  -Using evrClient instead of event module for SLAC EVR and EVRMA driver.
+                  -Building only for cross targets that we use with ADCore (rhel6-x86_64 & linuxRT-x86_64).
+                  -Fixed import drvMrfEr.h -> devMrfEr.h with evrClient module.
+
 R1.10.0:          Hugo Slepicka, 05/04/2017
                   Bumped version:
                   - perfMeasure: R1.5.0

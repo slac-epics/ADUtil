@@ -4,7 +4,7 @@
 #include <epicsMutex.h>
 #include <perfMeasure.h>
 #include <subRecord.h>            /* for struct subRecord         */
-#include "drvMrfEr.h"
+#include "devMrfEr.h"
 #include "evrPattern.h"
 #include "evrTime.h"
 
