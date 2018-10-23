@@ -1,4 +1,9 @@
+R2.0.1:           Marcio Donadio, 10/23/2018
+                  - Bumped version miscUtils: R2.2.5
+                  - Added required module for new miscUtils: timingApi R0.6
+
 R2.0.0:           Hugo Slepicka, 10/10/2017
+		  -Using evrClient instead of event module for SLAC EVR and EVRMA driver.
 		  -Using evrClient instead of event module for SLAC EVR and EVRMA driver.
                   -Building only for cross targets that we use with ADCore (rhel6-x86_64 & linuxRT-x86_64).
                   -Fixed import drvMrfEr.h -> devMrfEr.h with evrClient module.
