@@ -1,3 +1,6 @@
+R2.0.2:		Bruce Hill 2019-03-13
+			Update to ADCore/R3.1-2.3.1
+
 R2.0.1:           Marcio Donadio, 10/23/2018
                   - Bumped version miscUtils: R2.2.5
                   - Added required module for new miscUtils: timingApi R0.6
