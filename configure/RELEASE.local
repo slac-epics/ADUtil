@@ -21,10 +21,10 @@
 # ==========================================================
 ASYN_MODULE_VERSION=R4.32-1.0.0
 ADCORE_MODULE_VERSION=R3.1-2.3.3
-EVRCLIENT_MODULE_VERSION=R1.5.0
+EVRCLIENT_MODULE_VERSION=R1.5.1
 TIMINGAPI_MODULE_VERSION=R0.6
 MISCUTILS_MODULE_VERSION=R2.2.5
-PERFMEASURE_MODULE_VERSION=R1.5.0
+PERFMEASURE_MODULE_VERSION=R1.5.1
 
 # ==========================================================
 # Define module paths using pattern
