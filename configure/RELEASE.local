@@ -19,8 +19,8 @@
 # Don't set your version to anything such as "test" that
 # could match a directory name.
 # ==========================================================
-ASYN_MODULE_VERSION=R4.39-0.0.1
-ADCORE_MODULE_VERSION=R3.9-1.0.1
+ASYN_MODULE_VERSION=R4.39-1.0.0
+ADCORE_MODULE_VERSION=R3.9-1.0.2
 EVRCLIENT_MODULE_VERSION=R1.5.1
 TIMINGAPI_MODULE_VERSION=R0.6
 MISCUTILS_MODULE_VERSION=R2.2.5
