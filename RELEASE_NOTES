@@ -1,3 +1,7 @@
+R2.0.6:		K. Luchini  2021-09-29
+                 - update asyn module to R4.39-0.0.1
+                 - update adcore module to R3.9-1.0.1
+
 R2.0.5:		K. Luchini  2021-05-20
                  - Update to perfMeasure/R1.5.1
                  - Update to evrClient/R1.5.1
